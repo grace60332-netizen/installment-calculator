@@ -2,26 +2,55 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>分期試算</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>和潤專案試算系統</title>
 
 <style>
 
 body{
-    font-family: Arial;
-    max-width:800px;
+    font-family: "Microsoft JhengHei", sans-serif;
+    max-width:1200px;
     margin:auto;
-    padding:30px;
+    padding:20px;
+    background:#f5f6fa;
 }
 
-input{
-    width:200px;
-    padding:10px;
-    font-size:18px;
+.container{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.row{
+    display:flex;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+select,input{
+    padding:12px;
+    font-size:16px;
 }
 
 button{
-    padding:10px 20px;
-    margin-left:10px;
+    background:#005BAC;
+    color:white;
+    border:none;
+    padding:12px 25px;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+button:hover{
+    background:#00458a;
 }
 
 table{
@@ -30,14 +59,37 @@ table{
     margin-top:20px;
 }
 
+th{
+    background:#005BAC;
+    color:white;
+}
+
 th,td{
-    border:1px solid #ccc;
+    border:1px solid #ddd;
     padding:10px;
     text-align:center;
 }
 
-th{
-    background:#f3f3f3;
+tr:nth-child(even){
+    background:#f9f9f9;
+}
+
+.note{
+    margin-top:15px;
+    color:#666;
+    font-size:14px;
+}
+
+@media(max-width:768px){
+
+table{
+    font-size:12px;
+}
+
+th,td{
+    padding:6px;
+}
+
 }
 
 </style>
@@ -45,72 +97,347 @@ th{
 
 <body>
 
-<h1>商品分期試算</h1>
+<div class="container">
+
+<h1>和潤專案試算系統</h1>
+
+<div class="row">
+
+<select id="project">
+
+<option value="hao">豪享專案</option>
+<option value="le">樂享專案</option>
+<option value="gou">樂購專案</option>
+<option value="used">中古尊榮</option>
+
+</select>
 
 <input
 id="amount"
 type="number"
-placeholder="輸入商品金額"
-/>
+placeholder="請輸入貸款金額(萬元)"
+>
 
 <button onclick="calculate()">
-試算
+開始試算
 </button>
 
-<table>
+</div>
 
-<thead>
-<tr>
-<th>期數</th>
-<th>利率</th>
-<th>每月付款</th>
-</tr>
-</thead>
+<div id="result"></div>
 
-<tbody id="result">
+<div class="note">
+輸入100代表100萬元
+</div>
 
-</tbody>
-
-</table>
+</div>
 
 <script>
 
+function formatMoney(num){
+    return "$" + Math.round(num).toLocaleString();
+}
+
+function PMT(rate,nper,pv,fv=0){
+
+    if(rate===0){
+        return -(pv+fv)/nper;
+    }
+
+    return (
+        rate *
+        (pv*Math.pow(1+rate,nper)+fv)
+        /
+        (1-Math.pow(1+rate,nper))
+    );
+
+}
+
+function FV(rate,nper,pmt,pv){
+
+    return (
+        pv*Math.pow(1+rate,nper)
+        +
+        pmt *
+        (
+            (Math.pow(1+rate,nper)-1)
+            /
+            rate
+        )
+    );
+
+}
+
+function commission(rate,amount){
+
+    if(rate===3.99){
+
+        if(amount>=1500000){
+            return 10000;
+        }
+
+        return 8000;
+    }
+
+    return 15000;
+
+}
+
+function usedCommission(amount,rate){
+
+    if(amount<1000000){
+        return 0;
+    }
+
+    if(rate>=4.75){
+        return 15000;
+    }
+
+    if(amount>=1500000){
+        return 10000;
+    }
+
+    return 8000;
+
+}
+
+function usedFirst12(amount){
+
+    if(amount<1000000) return null;
+
+    if(amount<1600000) return 8888;
+    if(amount<2100000) return 12888;
+    if(amount<2600000) return 16888;
+    if(amount<3100000) return 20888;
+    if(amount<3600000) return 24888;
+    if(amount<4100000) return 28888;
+    if(amount<4600000) return 32888;
+    if(amount<=5000000) return 36888;
+
+    return null;
+
+}
+
 function calculate(){
 
-let amount =
-Number(document.getElementById("amount").value);
+    let project =
+    document.getElementById("project").value;
 
-let plans = [
+    let amountWan =
+    Number(document.getElementById("amount").value);
 
-{month:12,rate:0},
-{month:24,rate:0.02},
-{month:36,rate:0.03},
-{month:48,rate:0.05}
+    let amount =
+    amountWan * 10000;
 
-];
+    let html = "";
 
-let html = "";
+    if(amount<=0){
 
-plans.forEach(plan=>{
+        alert("請輸入金額");
 
-let total =
-amount*(1+plan.rate);
+        return;
+    }
 
-let monthly =
-Math.round(total/plan.month);
+    if(project==="hao"){
 
-html += `
-<tr>
-<td>${plan.month}期</td>
-<td>${plan.rate*100}%</td>
-<td>${monthly.toLocaleString()}元</td>
-</tr>
-`;
+        html += `
+        <table>
+        <tr>
+        <th>貸款金額</th>
+        <th>期數</th>
+        <th>1~12期</th>
+        <th>13~24期</th>
+        <th>25~59期</th>
+        <th>尾款</th>
+        <th>佣金</th>
+        <th>利率</th>
+        </tr>
+        `;
 
-});
+        [3.99,4.25].forEach(rate=>{
 
-document.getElementById("result").innerHTML =
-html;
+            let first12 = 8888;
+
+            let second12 =
+            amount/100 + 888;
+
+            let tail =
+            amount*0.5;
+
+            let monthly =
+            Math.ceil(
+                amount*0.0115*(rate/3.99)
+            );
+
+            html += `
+            <tr>
+            <td>${formatMoney(amount)}</td>
+            <td>60</td>
+            <td>${formatMoney(first12)}</td>
+            <td>${formatMoney(second12)}</td>
+            <td>${formatMoney(monthly)}</td>
+            <td>${formatMoney(tail)}</td>
+            <td>${formatMoney(commission(rate,amount))}</td>
+            <td>${rate}%</td>
+            </tr>
+            `;
+
+        });
+
+        html += "</table>";
+
+    }
+
+    if(project==="le"){
+
+        html += `
+        <table>
+        <tr>
+        <th>貸款金額</th>
+        <th>期數</th>
+        <th>1~12期</th>
+        <th>13~59期</th>
+        <th>60期</th>
+        <th>佣金</th>
+        <th>利率</th>
+        </tr>
+        `;
+
+        [3.99,4.25].forEach(rate=>{
+
+            let first12 = 8888;
+
+            let middle =
+            amount/100 + 888;
+
+            let last =
+            Math.ceil(
+                amount*0.54*(rate/3.99)
+            );
+
+            html += `
+            <tr>
+            <td>${formatMoney(amount)}</td>
+            <td>60</td>
+            <td>${formatMoney(first12)}</td>
+            <td>${formatMoney(middle)}</td>
+            <td>${formatMoney(last)}</td>
+            <td>${formatMoney(commission(rate,amount))}</td>
+            <td>${rate}%</td>
+            </tr>
+            `;
+
+        });
+
+        html += "</table>";
+
+    }
+
+    if(project==="gou"){
+
+        html += `
+        <table>
+        <tr>
+        <th>貸款金額</th>
+        <th>期數</th>
+        <th>1~59期</th>
+        <th>60期</th>
+        <th>佣金</th>
+        <th>利率</th>
+        </tr>
+        `;
+
+        [3.99,4.25].forEach(rate=>{
+
+            let normal =
+            amount/100;
+
+            let last =
+            Math.ceil(
+                amount*0.57*(rate/3.99)
+            );
+
+            html += `
+            <tr>
+            <td>${formatMoney(amount)}</td>
+            <td>60</td>
+            <td>${formatMoney(normal)}</td>
+            <td>${formatMoney(last)}</td>
+            <td>${formatMoney(commission(rate,amount))}</td>
+            <td>${rate}%</td>
+            </tr>
+            `;
+
+        });
+
+        html += "</table>";
+
+    }
+
+    if(project==="used"){
+
+        let rates =
+        [4.5,4.75,5.0,5.25,5.5,5.75];
+
+        let first12 =
+        usedFirst12(amount);
+
+        if(first12===null){
+
+            document.getElementById("result").innerHTML =
+            "<h3>中古尊榮貸款金額需介於100萬~500萬</h3>";
+
+            return;
+        }
+
+        html += `
+        <table>
+        <tr>
+        <th>利率</th>
+        <th>貸款金額</th>
+        <th>1~12期</th>
+        <th>13~24期</th>
+        <th>25~59期</th>
+        <th>尾款</th>
+        <th>佣金</th>
+        </tr>
+        `;
+
+        rates.forEach(rate=>{
+
+            let second12 =
+            amount/100 + 888;
+
+            let tail =
+            amount*0.5;
+
+            let monthly =
+            Math.ceil(
+                amount*(0.0125+(rate-4.5)*0.0012)
+            );
+
+            html += `
+            <tr>
+            <td>${rate}%</td>
+            <td>${formatMoney(amount)}</td>
+            <td>${formatMoney(first12)}</td>
+            <td>${formatMoney(second12)}</td>
+            <td>${formatMoney(monthly)}</td>
+            <td>${formatMoney(tail)}</td>
+            <td>${formatMoney(
+                usedCommission(amount,rate)
+            )}</td>
+            </tr>
+            `;
+
+        });
+
+        html += "</table>";
+
+    }
+
+    document.getElementById("result").innerHTML =
+    html;
 
 }
 
