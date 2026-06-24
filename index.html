@@ -1,447 +1,634 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分期試算工具</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --accent-2: #eff6ff;
+    }
 
-<title>和潤專案試算系統</title>
+    * { box-sizing: border-box; }
 
-<style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
 
-body{
-    font-family: "Microsoft JhengHei", sans-serif;
-    max-width:1200px;
-    margin:auto;
-    padding:20px;
-    background:#f5f6fa;
-}
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
 
-.container{
-    background:white;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      margin-bottom: 20px;
+    }
 
-h1{
-    text-align:center;
-    margin-bottom:25px;
-}
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: .02em;
+    }
 
-.row{
-    display:flex;
-    gap:15px;
-    margin-bottom:20px;
-    flex-wrap:wrap;
-}
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
 
-select,input{
-    padding:12px;
-    font-size:16px;
-}
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+      margin-bottom: 18px;
+    }
 
-button{
-    background:#005BAC;
-    color:white;
-    border:none;
-    padding:12px 25px;
-    cursor:pointer;
-    border-radius:6px;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      align-items: end;
+    }
 
-button:hover{
-    background:#00458a;
-}
+    .field {
+      grid-column: span 4;
+      min-width: 0;
+    }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
+    .field.wide { grid-column: span 6; }
+    .field.full { grid-column: 1 / -1; }
 
-th{
-    background:#005BAC;
-    color:white;
-}
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
 
-th,td{
-    border:1px solid #ddd;
-    padding:10px;
-    text-align:center;
-}
+    input, select, button {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+    }
 
-tr:nth-child(even){
-    background:#f9f9f9;
-}
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
 
-.note{
-    margin-top:15px;
-    color:#666;
-    font-size:14px;
-}
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-@media(max-width:768px){
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 12px 18px;
+      width: auto;
+      min-width: 140px;
+    }
 
-table{
-    font-size:12px;
-}
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
 
-th,td{
-    padding:6px;
-}
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
 
-}
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
 
-</style>
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-2);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    thead th {
+      background: #f9fafb;
+      text-align: center;
+      font-weight: 700;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    tbody td {
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .error {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    @media (max-width: 860px) {
+      .field, .field.wide { grid-column: 1 / -1; }
+      h1 { font-size: 24px; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>分期試算工具</h1>
+      <p class="sub">先選專案，再輸入「萬元」金額，系統會依照各專案規則自動產出試算表。</p>
+    </div>
 
-<div class="container">
+    <div class="panel">
+      <div class="grid">
+        <div class="field wide">
+          <label for="project">選擇專案</label>
+          <select id="project">
+            <option value="hao">豪享專案</option>
+            <option value="le">樂享專案</option>
+            <option value="go">樂購專案</option>
+            <option value="used">中古尊榮</option>
+          </select>
+        </div>
 
-<h1>和潤專案試算系統</h1>
+        <div class="field wide">
+          <label for="loanWan">貸款金額（萬元）</label>
+          <input id="loanWan" type="number" inputmode="decimal" min="0" step="0.01" value="100" placeholder="例如：100 代表 1,000,000 元" />
+        </div>
 
-<div class="row">
+        <div class="field full button-row">
+          <button id="calcBtn" type="button">開始試算</button>
+          <button id="fill100Btn" class="secondary" type="button">帶入 100 萬測試</button>
+        </div>
+      </div>
+      <div class="note">提醒：此頁面以「萬元」輸入，避免少打一個 0。系統會自動換算為元。</div>
+    </div>
 
-<select id="project">
+    <div class="panel">
+      <div class="result-head">
+        <div>
+          <strong>試算結果</strong>
+          <div class="sub" id="summaryText">尚未試算</div>
+        </div>
+        <div class="badge" id="badgeText">等待輸入</div>
+      </div>
+      <div id="resultArea" class="empty">請先選專案並按下「開始試算」。</div>
+    </div>
+  </div>
 
-<option value="hao">豪享專案</option>
-<option value="le">樂享專案</option>
-<option value="gou">樂購專案</option>
-<option value="used">中古尊榮</option>
+  <script>
+    const rateLabels = {
+      hao: [3.99, 4.25],
+      le: [3.99, 4.25],
+      go: [3.99, 4.25],
+      used: [4.50, 4.75, 5.00, 5.25, 5.50, 5.75],
+    };
 
-</select>
+    const projectNames = {
+      hao: "豪享專案",
+      le: "樂享專案",
+      go: "樂購專案",
+      used: "中古尊榮",
+    };
 
-<input
-id="amount"
-type="number"
-placeholder="請輸入貸款金額(萬元)"
->
-
-<button onclick="calculate()">
-開始試算
-</button>
-
-</div>
-
-<div id="result"></div>
-
-<div class="note">
-輸入100代表100萬元
-</div>
-
-</div>
-
-<script>
-
-function formatMoney(num){
-    return "$" + Math.round(num).toLocaleString();
-}
-
-function PMT(rate,nper,pv,fv=0){
-
-    if(rate===0){
-        return -(pv+fv)/nper;
+    function fmtMoney(n) {
+      const num = Math.round(Number(n) || 0);
+      return "$" + num.toLocaleString("zh-TW");
     }
 
-    return (
-        rate *
-        (pv*Math.pow(1+rate,nper)+fv)
-        /
-        (1-Math.pow(1+rate,nper))
-    );
+    function fmtRate(rate) {
+      return Number(rate).toFixed(2) + "%";
+    }
 
-}
+    function roundUpExcel(value, digits = 0) {
+      const n = Number(value) || 0;
+      if (digits === 0) return Math.ceil(n);
+      if (digits > 0) {
+        const factor = Math.pow(10, digits);
+        return Math.ceil(n * factor) / factor;
+      }
+      const factor = Math.pow(10, -digits);
+      return Math.ceil(n / factor) * factor;
+    }
 
-function FV(rate,nper,pmt,pv){
+    function PMT(rate, nper, pv, fv = 0, type = 0) {
+      rate = Number(rate) || 0;
+      nper = Number(nper) || 0;
+      pv = Number(pv) || 0;
+      fv = Number(fv) || 0;
+      type = Number(type) || 0;
 
-    return (
-        pv*Math.pow(1+rate,nper)
-        +
-        pmt *
-        (
-            (Math.pow(1+rate,nper)-1)
-            /
-            rate
-        )
-    );
+      if (rate === 0) {
+        return -(pv + fv) / nper;
+      }
 
-}
+      const pvif = Math.pow(1 + rate, nper);
+      let pmt = (rate / (pvif - 1)) * -(pv * pvif + fv);
 
-function commission(rate,amount){
+      if (type === 1) {
+        pmt /= (1 + rate);
+      }
 
-    if(rate===3.99){
+      return pmt;
+    }
 
-        if(amount>=1500000){
-            return 10000;
+    function FV(rate, nper, pmt, pv = 0, type = 0) {
+      rate = Number(rate) || 0;
+      nper = Number(nper) || 0;
+      pmt = Number(pmt) || 0;
+      pv = Number(pv) || 0;
+      type = Number(type) || 0;
+
+      if (rate === 0) {
+        return -(pv + pmt * nper);
+      }
+
+      return -(
+        pv * Math.pow(1 + rate, nper) +
+        pmt * (1 + rate * type) * ((Math.pow(1 + rate, nper) - 1) / rate)
+      );
+    }
+
+    function PV(rate, nper, pmt, fv = 0, type = 0) {
+      rate = Number(rate) || 0;
+      nper = Number(nper) || 0;
+      pmt = Number(pmt) || 0;
+      fv = Number(fv) || 0;
+      type = Number(type) || 0;
+
+      if (rate === 0) {
+        return -(fv + pmt * nper);
+      }
+
+      const factor = Math.pow(1 + rate, nper);
+      return -(
+        fv +
+        pmt * (1 + rate * type) * ((1 - 1 / factor) / rate)
+      ) / factor;
+    }
+
+    function getCommission(project, amountTwd, ratePct) {
+      if (project === "hao" || project === "le" || project === "go") {
+        if (ratePct === 3.99) {
+          return amountTwd >= 1500000 ? 10000 : 8000;
         }
-
-        return 8000;
-    }
-
-    return 15000;
-
-}
-
-function usedCommission(amount,rate){
-
-    if(amount<1000000){
-        return 0;
-    }
-
-    if(rate>=4.75){
         return 15000;
+      }
+
+      if (project === "used") {
+        if (amountTwd < 1000000 || ratePct < 4.5) return 0;
+        if (ratePct >= 4.75) return 15000;
+        if (amountTwd >= 1500000 && ratePct >= 4.5) return 10000;
+        return 8000;
+      }
+
+      return 0;
     }
 
-    if(amount>=1500000){
-        return 10000;
+    function calcHaoXiang(amountTwd, ratePct) {
+      const rate = ratePct / 100 / 12;
+      const first12 = 8888;
+      const second12 = amountTwd / 100 + 888;
+      const balloon = amountTwd * 0.5;
+
+      const fv1 = FV(rate, 12, second12, -FV(rate, 12, first12, -amountTwd));
+      const third35 = roundUpExcel(PMT(rate, 35, -fv1, -PV(rate, 1, balloon, 0), 0), 0);
+
+      return {
+        amountTwd,
+        ratePct,
+        first12,
+        second12,
+        third35,
+        balloon,
+        commission: getCommission("hao", amountTwd, ratePct),
+      };
     }
 
-    return 8000;
+    function calcLeXiang(amountTwd, ratePct) {
+      const rate = ratePct / 100 / 12;
+      const first12 = 8888;
+      const mid47 = amountTwd / 100 + 888;
 
-}
+      const sixty = roundUpExcel(
+        PMT(rate, 1, -FV(rate, 47, mid47, -FV(rate, 12, first12, -amountTwd))),
+        0
+      );
 
-function usedFirst12(amount){
+      return {
+        amountTwd,
+        ratePct,
+        first12,
+        mid47,
+        sixty,
+        commission: getCommission("le", amountTwd, ratePct),
+      };
+    }
 
-    if(amount<1000000) return null;
+    function calcLeGou(amountTwd, ratePct) {
+      const rate = ratePct / 100 / 12;
+      const first59 = amountTwd / 100;
 
-    if(amount<1600000) return 8888;
-    if(amount<2100000) return 12888;
-    if(amount<2600000) return 16888;
-    if(amount<3100000) return 20888;
-    if(amount<3600000) return 24888;
-    if(amount<4100000) return 28888;
-    if(amount<4600000) return 32888;
-    if(amount<=5000000) return 36888;
+      const sixty = roundUpExcel(
+        PMT(rate, 1, -FV(rate, 59, first59, -amountTwd)),
+        0
+      );
 
-    return null;
+      return {
+        amountTwd,
+        ratePct,
+        first59,
+        sixty,
+        commission: getCommission("go", amountTwd, ratePct),
+      };
+    }
 
-}
+    function calcUsedVip(amountTwd, ratePct) {
+      const rate = ratePct / 100 / 12;
+      const first12 = amountTwd < 1000000 ? null : (amountTwd < 1600000 ? 8888 :
+        amountTwd < 2100000 ? 12888 :
+        amountTwd < 2600000 ? 16888 :
+        amountTwd < 3100000 ? 20888 :
+        amountTwd < 3600000 ? 24888 :
+        amountTwd < 4100000 ? 28888 :
+        amountTwd < 4600000 ? 32888 :
+        amountTwd <= 5000000 ? 36888 : null);
 
-function calculate(){
+      const second12 = amountTwd / 100 + 888;
+      const balloon = amountTwd * 0.5;
 
-    let project =
-    document.getElementById("project").value;
+      let third35 = null;
+      if (first12 !== null) {
+        const fv1 = FV(rate, 12, second12, -FV(rate, 12, first12, -amountTwd));
+        third35 = roundUpExcel(PMT(rate, 35, -fv1, -PV(rate, 1, balloon, 0), 1), -1);
+      }
 
-    let amountWan =
-    Number(document.getElementById("amount").value);
+      return {
+        amountTwd,
+        ratePct,
+        first12,
+        second12,
+        third35,
+        balloon,
+        commission: getCommission("used", amountTwd, ratePct),
+      };
+    }
 
-    let amount =
-    amountWan * 10000;
+    function buildRows(project, amountWan) {
+      const amountTwd = amountWan * 10000;
+      const rates = rateLabels[project] || [];
 
-    let html = "";
+      if (project === "hao") {
+        return rates.map((r) => calcHaoXiang(amountTwd, r));
+      }
+      if (project === "le") {
+        return rates.map((r) => calcLeXiang(amountTwd, r));
+      }
+      if (project === "go") {
+        return rates.map((r) => calcLeGou(amountTwd, r));
+      }
+      if (project === "used") {
+        return rates.map((r) => calcUsedVip(amountTwd, r));
+      }
+      return [];
+    }
 
-    if(amount<=0){
+    function renderTable(project, rows, amountWan) {
+      const amountTwd = amountWan * 10000;
+      const summary = `${projectNames[project]}｜貸款金額：${fmtMoney(amountTwd)}（${amountWan} 萬）`;
+      document.getElementById("summaryText").textContent = summary;
+      document.getElementById("badgeText").textContent = projectNames[project];
 
-        alert("請輸入金額");
+      let html = "";
 
+      if (project === "hao") {
+        html += `
+          <table>
+            <thead>
+              <tr>
+                <th>貸款金額</th>
+                <th>期數</th>
+                <th>1~12期</th>
+                <th>13~24期</th>
+                <th>25~59期</th>
+                <th>尾款(50%)</th>
+                <th>佣金</th>
+                <th>客戶利率</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        rows.forEach((r) => {
+          html += `
+            <tr>
+              <td>${fmtMoney(r.amountTwd)}</td>
+              <td>60</td>
+              <td>${fmtMoney(r.first12)}</td>
+              <td>${fmtMoney(r.second12)}</td>
+              <td>${fmtMoney(r.third35)}</td>
+              <td>${fmtMoney(r.balloon)}</td>
+              <td>${fmtMoney(r.commission)}</td>
+              <td>${fmtRate(r.ratePct)}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+      }
+
+      if (project === "le") {
+        html += `
+          <table>
+            <thead>
+              <tr>
+                <th>貸款金額</th>
+                <th>期數</th>
+                <th>1~12期</th>
+                <th>13~59期</th>
+                <th>60期</th>
+                <th>佣金</th>
+                <th>客戶利率</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        rows.forEach((r) => {
+          html += `
+            <tr>
+              <td>${fmtMoney(r.amountTwd)}</td>
+              <td>60</td>
+              <td>${fmtMoney(r.first12)}</td>
+              <td>${fmtMoney(r.mid47)}</td>
+              <td>${fmtMoney(r.sixty)}</td>
+              <td>${fmtMoney(r.commission)}</td>
+              <td>${fmtRate(r.ratePct)}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+      }
+
+      if (project === "go") {
+        html += `
+          <table>
+            <thead>
+              <tr>
+                <th>貸款金額</th>
+                <th>期數</th>
+                <th>1~59期</th>
+                <th>60期</th>
+                <th>佣金</th>
+                <th>客戶利率</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        rows.forEach((r) => {
+          html += `
+            <tr>
+              <td>${fmtMoney(r.amountTwd)}</td>
+              <td>60</td>
+              <td>${fmtMoney(r.first59)}</td>
+              <td>${fmtMoney(r.sixty)}</td>
+              <td>${fmtMoney(r.commission)}</td>
+              <td>${fmtRate(r.ratePct)}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+      }
+
+      if (project === "used") {
+        html += `
+          <table>
+            <thead>
+              <tr>
+                <th>利率</th>
+                <th>貸款金額</th>
+                <th>1~12期</th>
+                <th>13~24期</th>
+                <th>25~59期</th>
+                <th>尾款</th>
+                <th>佣金</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        rows.forEach((r) => {
+          const first12Text = r.first12 === null ? "超出範圍" : fmtMoney(r.first12);
+          const third35Text = r.third35 === null ? "超出範圍" : fmtMoney(r.third35);
+          html += `
+            <tr>
+              <td>${fmtRate(r.ratePct)}</td>
+              <td>${fmtMoney(r.amountTwd)}</td>
+              <td>${first12Text}</td>
+              <td>${fmtMoney(r.second12)}</td>
+              <td>${third35Text}</td>
+              <td>${fmtMoney(r.balloon)}</td>
+              <td>${fmtMoney(r.commission)}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+      }
+
+      document.getElementById("resultArea").className = "";
+      document.getElementById("resultArea").innerHTML = html;
+    }
+
+    function calculate() {
+      const project = document.getElementById("project").value;
+      const amountWan = Number(document.getElementById("loanWan").value);
+      const resultArea = document.getElementById("resultArea");
+
+      if (!Number.isFinite(amountWan) || amountWan <= 0) {
+        resultArea.className = "empty error";
+        resultArea.textContent = "請輸入正確的貸款金額（萬元）。";
+        document.getElementById("summaryText").textContent = "尚未試算";
+        document.getElementById("badgeText").textContent = "資料錯誤";
         return;
+      }
+
+      const rows = buildRows(project, amountWan);
+      renderTable(project, rows, amountWan);
     }
 
-    if(project==="hao"){
+    document.getElementById("calcBtn").addEventListener("click", calculate);
+    document.getElementById("fill100Btn").addEventListener("click", () => {
+      document.getElementById("loanWan").value = 100;
+      calculate();
+    });
 
-        html += `
-        <table>
-        <tr>
-        <th>貸款金額</th>
-        <th>期數</th>
-        <th>1~12期</th>
-        <th>13~24期</th>
-        <th>25~59期</th>
-        <th>尾款</th>
-        <th>佣金</th>
-        <th>利率</th>
-        </tr>
-        `;
+    document.getElementById("project").addEventListener("change", calculate);
+    document.getElementById("loanWan").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") calculate();
+    });
 
-        [3.99,4.25].forEach(rate=>{
-
-            let first12 = 8888;
-
-            let second12 =
-            amount/100 + 888;
-
-            let tail =
-            amount*0.5;
-
-            let monthly =
-            Math.ceil(
-                amount*0.0115*(rate/3.99)
-            );
-
-            html += `
-            <tr>
-            <td>${formatMoney(amount)}</td>
-            <td>60</td>
-            <td>${formatMoney(first12)}</td>
-            <td>${formatMoney(second12)}</td>
-            <td>${formatMoney(monthly)}</td>
-            <td>${formatMoney(tail)}</td>
-            <td>${formatMoney(commission(rate,amount))}</td>
-            <td>${rate}%</td>
-            </tr>
-            `;
-
-        });
-
-        html += "</table>";
-
-    }
-
-    if(project==="le"){
-
-        html += `
-        <table>
-        <tr>
-        <th>貸款金額</th>
-        <th>期數</th>
-        <th>1~12期</th>
-        <th>13~59期</th>
-        <th>60期</th>
-        <th>佣金</th>
-        <th>利率</th>
-        </tr>
-        `;
-
-        [3.99,4.25].forEach(rate=>{
-
-            let first12 = 8888;
-
-            let middle =
-            amount/100 + 888;
-
-            let last =
-            Math.ceil(
-                amount*0.54*(rate/3.99)
-            );
-
-            html += `
-            <tr>
-            <td>${formatMoney(amount)}</td>
-            <td>60</td>
-            <td>${formatMoney(first12)}</td>
-            <td>${formatMoney(middle)}</td>
-            <td>${formatMoney(last)}</td>
-            <td>${formatMoney(commission(rate,amount))}</td>
-            <td>${rate}%</td>
-            </tr>
-            `;
-
-        });
-
-        html += "</table>";
-
-    }
-
-    if(project==="gou"){
-
-        html += `
-        <table>
-        <tr>
-        <th>貸款金額</th>
-        <th>期數</th>
-        <th>1~59期</th>
-        <th>60期</th>
-        <th>佣金</th>
-        <th>利率</th>
-        </tr>
-        `;
-
-        [3.99,4.25].forEach(rate=>{
-
-            let normal =
-            amount/100;
-
-            let last =
-            Math.ceil(
-                amount*0.57*(rate/3.99)
-            );
-
-            html += `
-            <tr>
-            <td>${formatMoney(amount)}</td>
-            <td>60</td>
-            <td>${formatMoney(normal)}</td>
-            <td>${formatMoney(last)}</td>
-            <td>${formatMoney(commission(rate,amount))}</td>
-            <td>${rate}%</td>
-            </tr>
-            `;
-
-        });
-
-        html += "</table>";
-
-    }
-
-    if(project==="used"){
-
-        let rates =
-        [4.5,4.75,5.0,5.25,5.5,5.75];
-
-        let first12 =
-        usedFirst12(amount);
-
-        if(first12===null){
-
-            document.getElementById("result").innerHTML =
-            "<h3>中古尊榮貸款金額需介於100萬~500萬</h3>";
-
-            return;
-        }
-
-        html += `
-        <table>
-        <tr>
-        <th>利率</th>
-        <th>貸款金額</th>
-        <th>1~12期</th>
-        <th>13~24期</th>
-        <th>25~59期</th>
-        <th>尾款</th>
-        <th>佣金</th>
-        </tr>
-        `;
-
-        rates.forEach(rate=>{
-
-            let second12 =
-            amount/100 + 888;
-
-            let tail =
-            amount*0.5;
-
-            let monthly =
-            Math.ceil(
-                amount*(0.0125+(rate-4.5)*0.0012)
-            );
-
-            html += `
-            <tr>
-            <td>${rate}%</td>
-            <td>${formatMoney(amount)}</td>
-            <td>${formatMoney(first12)}</td>
-            <td>${formatMoney(second12)}</td>
-            <td>${formatMoney(monthly)}</td>
-            <td>${formatMoney(tail)}</td>
-            <td>${formatMoney(
-                usedCommission(amount,rate)
-            )}</td>
-            </tr>
-            `;
-
-        });
-
-        html += "</table>";
-
-    }
-
-    document.getElementById("result").innerHTML =
-    html;
-
-}
-
-</script>
-
+    // 預設先做一次 100 萬試算，方便你確認畫面與公式。
+    calculate();
+  </script>
 </body>
 </html>
