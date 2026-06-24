@@ -6,368 +6,339 @@
   <title>分期試算工具</title>
   <style>
     :root {
-      --bg: #f7f7fb;
+      --bg: #f7f8fb;
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
       --line: #e5e7eb;
       --primary: #2563eb;
-      --primary-weak: #eff6ff;
-      --danger: #b91c1c;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+      --success: #047857;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+        "PingFang TC", "Microsoft JhengHei", sans-serif;
+      line-height: 1.5;
     }
 
-    .wrap {
-      max-width: 1180px;
+    .container {
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 32px 18px 56px;
+      padding: 32px 16px 48px;
     }
 
     .hero {
-      background: linear-gradient(180deg, #ffffff, #fbfdff);
+      background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 18px;
       padding: 24px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+      margin-bottom: 20px;
     }
 
     h1 {
       margin: 0 0 8px;
       font-size: 28px;
-      line-height: 1.2;
     }
 
     .sub {
-      color: var(--muted);
       margin: 0;
+      color: var(--muted);
       font-size: 14px;
-      line-height: 1.7;
     }
 
     .panel {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 18px;
       padding: 20px;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
     }
 
-    .grid {
+    .controls {
       display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr auto;
+      grid-template-columns: 1fr 1fr auto;
       gap: 14px;
       align-items: end;
     }
 
     .field label {
       display: block;
-      font-size: 13px;
+      font-size: 14px;
+      margin-bottom: 8px;
       color: var(--muted);
-      margin-bottom: 7px;
     }
 
-    .field input,
-    .field select {
+    select,
+    input {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      font-size: 15px;
+      border-radius: 12px;
+      font-size: 16px;
       background: #fff;
-      color: var(--text);
       outline: none;
     }
 
-    .field input:focus,
-    .field select:focus {
-      border-color: rgba(37, 99, 235, 0.55);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    select:focus,
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     .btn {
-      border: 0;
-      background: var(--primary);
-      color: #fff;
+      border: none;
+      border-radius: 12px;
       padding: 12px 18px;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 16px;
+      background: var(--primary);
+      color: white;
       cursor: pointer;
-      transition: transform .08s ease, opacity .15s ease;
       white-space: nowrap;
-      min-width: 110px;
+      transition: 0.15s ease;
     }
 
-    .btn:hover { opacity: 0.95; }
-    .btn:active { transform: translateY(1px); }
+    .btn:hover {
+      background: var(--primary-hover);
+    }
 
-    .note {
-      margin-top: 12px;
+    .hint {
+      margin-top: 10px;
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.7;
     }
 
     .summary {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      background: var(--card);
+      margin-top: 14px;
+      padding: 14px 16px;
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+      background: #fafafa;
+      border-radius: 14px;
+      font-size: 14px;
+      color: var(--text);
     }
 
-    .stat .k {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
+    .summary strong {
+      color: var(--success);
     }
 
-    .stat .v {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-    }
-
-    .table-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-    }
-
-    .table-head {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .table-head h2 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    .table-head .hint {
-      color: var(--muted);
-      font-size: 13px;
+    .error {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      border-radius: 14px;
+      color: var(--danger);
+      font-size: 14px;
+      display: none;
     }
 
     .table-wrap {
+      margin-top: 18px;
       overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: white;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 860px;
+      min-width: 900px;
     }
 
     thead th {
-      background: var(--primary-weak);
-      color: #1e3a8a;
-      font-weight: 700;
-      font-size: 14px;
-      text-align: center;
-      padding: 14px 12px;
+      background: #f3f4f6;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
       border-bottom: 1px solid var(--line);
-      white-space: nowrap;
-    }
-
-    tbody td {
-      padding: 13px 12px;
       text-align: center;
-      border-bottom: 1px solid var(--line);
       font-size: 14px;
-      white-space: nowrap;
+      vertical-align: middle;
     }
 
-    tbody tr:nth-child(even) { background: #fafafa; }
-
-    .error {
-      color: var(--danger);
-      font-weight: 700;
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      padding-left: 14px;
     }
 
-    .hidden { display: none !important; }
-
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-      .summary { grid-template-columns: 1fr 1fr; }
+    tbody tr:hover {
+      background: #fafafa;
     }
 
-    @media (max-width: 640px) {
-      .grid { grid-template-columns: 1fr; }
-      .summary { grid-template-columns: 1fr; }
-      h1 { font-size: 24px; }
-      .hero, .panel, .table-head { padding-left: 16px; padding-right: 16px; }
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+
+    @media (max-width: 760px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
+  <div class="container">
+    <div class="hero">
       <h1>分期試算工具</h1>
-      <p class="sub">先用最簡單、可上線的版本：使用者只要輸入「萬」為單位的貸款金額，再選擇專案，就會自動帶出各期別與佣金結果。</p>
-    </section>
+      <p class="sub">
+        請先選擇專案，再輸入「萬」為單位的貸款金額。<span class="tag">例如 100 = 100萬</span>
+      </p>
+    </div>
 
-    <section class="panel">
-      <div class="grid">
+    <div class="panel">
+      <div class="controls">
         <div class="field">
           <label for="project">選擇專案</label>
           <select id="project">
-            <option value="hao">豪享專案</option>
-            <option value="le">樂享專案</option>
-            <option value="gou">樂購專案</option>
-            <option value="zhong">中古尊榮</option>
+            <option value="haoxiang">豪享專案</option>
+            <option value="lexiang">樂享專案</option>
+            <option value="legou">樂購專案</option>
+            <option value="zhonggui">中古尊榮</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="amountWan">貸款金額（萬）</label>
-          <input id="amountWan" type="number" min="0" step="0.01" placeholder="例如：100" value="100" />
+          <label for="loanWan">貸款金額（萬）</label>
+          <input id="loanWan" type="number" min="0" step="0.1" value="100" placeholder="例如：100" />
         </div>
 
-        <div class="field">
-          <label for="rateSelect">利率</label>
-          <select id="rateSelect"></select>
-        </div>
+        <button class="btn" id="calcBtn">開始試算</button>
+      </div>
 
-        <button class="btn" id="calcBtn">立即試算</button>
+      <div class="hint">
+        這個版本是依照你提供的 Excel 邏輯做前端試算，先用最簡單的方式把表格算出來。
       </div>
-      <div class="note" id="projectNote"></div>
-    </section>
 
-    <section class="summary">
-      <div class="stat">
-        <div class="k">輸入金額</div>
-        <div class="v" id="summaryAmount">$1,000,000</div>
-      </div>
-      <div class="stat">
-        <div class="k">專案</div>
-        <div class="v" id="summaryProject">豪享專案</div>
-      </div>
-      <div class="stat">
-        <div class="k">利率</div>
-        <div class="v" id="summaryRate">3.99%</div>
-      </div>
-      <div class="stat">
-        <div class="k">佣金</div>
-        <div class="v" id="summaryCommission">$8,000</div>
-      </div>
-    </section>
+      <div id="summary" class="summary"></div>
+      <div id="errorBox" class="error"></div>
 
-    <section class="table-card">
-      <div class="table-head">
-        <h2 id="tableTitle">試算結果</h2>
-        <div class="hint" id="tableHint">金額已以「萬」換算為實際貸款金額。</div>
-      </div>
-      <div class="table-wrap">
+      <div class="table-wrap" id="tableWrap">
         <table>
-          <thead id="resultHead"></thead>
-          <tbody id="resultBody"></tbody>
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
         </table>
       </div>
-    </section>
+
+      <div class="note" id="note"></div>
+    </div>
   </div>
 
   <script>
-    const projectSelect = document.getElementById('project');
-    const amountWanInput = document.getElementById('amountWan');
-    const rateSelect = document.getElementById('rateSelect');
-    const calcBtn = document.getElementById('calcBtn');
-
-    const summaryAmount = document.getElementById('summaryAmount');
-    const summaryProject = document.getElementById('summaryProject');
-    const summaryRate = document.getElementById('summaryRate');
-    const summaryCommission = document.getElementById('summaryCommission');
-    const projectNote = document.getElementById('projectNote');
-    const tableTitle = document.getElementById('tableTitle');
-    const resultHead = document.getElementById('resultHead');
-    const resultBody = document.getElementById('resultBody');
-
-    const rateOptions = {
-      hao: [3.99, 4.25],
-      le: [3.99, 4.25],
-      gou: [3.99, 4.25],
-      zhong: [4.50, 4.75, 5.00, 5.25, 5.50, 5.75]
-    };
-
-    const projectNames = {
-      hao: '豪享專案',
-      le: '樂享專案',
-      gou: '樂購專案',
-      zhong: '中古尊榮'
-    };
-
-    function money(n) {
-      if (!isFinite(n)) return '-';
-      return '$' + Math.round(n).toLocaleString('en-US');
-    }
-
-    function percent(n) {
-      return n.toFixed(2) + '%';
-    }
-
-    function roundUpTo(value, unit) {
-      return Math.ceil(value / unit) * unit;
-    }
-
-    function pmt(rate, nper, pv, fv = 0, type = 0) {
+    // ========= 基本財務函數：模擬 Excel 的 FV / PV / PMT =========
+    function fv(rate, nper, pmt, pv = 0, type = 0) {
       if (Math.abs(rate) < 1e-12) {
-        return (pv - fv) / nper;
+        return -(pv + pmt * nper);
       }
-      const r1 = Math.pow(1 + rate, nper);
-      return (rate * (pv * r1 - fv)) / ((1 + rate * type) * (r1 - 1));
+      return -(
+        pv * Math.pow(1 + rate, nper) +
+        pmt * (1 + rate * type) * ((Math.pow(1 + rate, nper) - 1) / rate)
+      );
     }
 
-    function balanceAfterPayments(principal, monthlyRate, payments) {
-      let bal = principal;
-      for (const payment of payments) {
-        bal = bal * (1 + monthlyRate) - payment;
+    function pv(rate, nper, pmt, fvValue = 0, type = 0) {
+      if (Math.abs(rate) < 1e-12) {
+        return -(fvValue + pmt * nper);
       }
-      return bal;
+      return -(
+        fvValue +
+        pmt * (1 + rate * type) * ((Math.pow(1 + rate, nper) - 1) / rate)
+      ) / Math.pow(1 + rate, nper);
     }
 
-    function commissionFor(project, rate, loan) {
-      if (project === 'hao' || project === 'le') {
-        if (rate === 3.99) return loan >= 1500000 ? 10000 : 8000;
-        if (rate === 4.25) return 15000;
-        return 0;
+    function pmt(rate, nper, pvValue, fvValue = 0, type = 0) {
+      if (Math.abs(rate) < 1e-12) {
+        return -(fvValue + pvValue) / nper;
       }
+      return -(
+        rate * (fvValue + pvValue * Math.pow(1 + rate, nper))
+      ) / (
+        (1 + rate * type) * ((Math.pow(1 + rate, nper) - 1))
+      );
+    }
 
-      if (project === 'zhong') {
-        if (loan < 1000000 || rate < 4.5) return 0;
-        if (rate >= 4.75) return 15000;
-        if (loan >= 1500000 && rate >= 4.5) return 10000;
-        return 8000;
+    // ========= 工具函數 =========
+    function roundUpInteger(n) {
+      return Math.ceil(n - 1e-10);
+    }
+
+    function roundUpTo10(n) {
+      return Math.ceil((n - 1e-10) / 10) * 10;
+    }
+
+    function formatMoney(value) {
+      if (typeof value !== "number" || !isFinite(value)) return String(value);
+      return value.toLocaleString("zh-Hant-TW");
+    }
+
+    function formatPercent(rate) {
+      return rate.toFixed(2) + "%";
+    }
+
+    function moneyText(value) {
+      return "$" + formatMoney(value);
+    }
+
+    function actualLoanFromWan(wan) {
+      return Math.round(wan * 10000);
+    }
+
+    function getCommissionCommon(rate, loan) {
+      // 豪享 / 樂享 / 樂購 共用
+      // 3.99%：8000；若貸款金額 >= 150萬，改 10000
+      // 4.25%：15000
+      if (Math.abs(rate - 3.99) < 1e-9) {
+        return loan >= 1500000 ? 10000 : 8000;
       }
-
+      if (Math.abs(rate - 4.25) < 1e-9) {
+        return 15000;
+      }
       return 0;
     }
 
-    function first12ForZhong(loan) {
+    function getCommissionZhonggui(rate, loan) {
+      // IF(OR(貸款金額<1000000,利率<4.5),0,IF(利率>=4.75,15000,IF(AND(貸款金額>=1500000,利率>=4.5),10000,8000)))
+      if (loan < 1000000 || rate < 4.5) return 0;
+      if (rate >= 4.75) return 15000;
+      if (loan >= 1500000 && rate >= 4.5) return 10000;
+      return 8000;
+    }
+
+    function getZhongguiFirst12(loan) {
       if (loan < 1000000 || loan > 5000000) return null;
+
       if (loan < 1600000) return 8888;
       if (loan < 2100000) return 12888;
       if (loan < 2600000) return 16888;
@@ -375,207 +346,228 @@
       if (loan < 3600000) return 24888;
       if (loan < 4100000) return 28888;
       if (loan < 4600000) return 32888;
-      return 36888;
+      if (loan <= 5000000) return 36888;
+      return null;
     }
 
-    function buildRateOptions() {
-      const project = projectSelect.value;
-      rateSelect.innerHTML = '';
-      rateOptions[project].forEach((rate) => {
-        const opt = document.createElement('option');
-        opt.value = String(rate);
-        opt.textContent = percent(rate);
-        rateSelect.appendChild(opt);
-      });
+    function clearTable() {
+      document.getElementById("tableHead").innerHTML = "";
+      document.getElementById("tableBody").innerHTML = "";
+      document.getElementById("summary").innerHTML = "";
+      document.getElementById("errorBox").style.display = "none";
+      document.getElementById("errorBox").innerText = "";
+      document.getElementById("note").innerText = "";
     }
 
-    function updateProjectNote() {
-      const project = projectSelect.value;
-      if (project === 'hao') {
-        projectNote.textContent = '豪享：固定 60 期。1~12 期固定 8888；13~24 期 = 貸款金額/100 + 888；25~59 期以前兩段付款推算；60 期為尾款 50%。';
-      } else if (project === 'le') {
-        projectNote.textContent = '樂享：固定 60 期。1~12 期固定 8888；13~59 期 = 貸款金額/100 + 888；60 期為最後一期清償金額。';
-      } else if (project === 'gou') {
-        projectNote.textContent = '樂購：固定 60 期。1~59 期固定為 貸款金額/100；60 期為最後一期清償金額。';
-      } else {
-        projectNote.textContent = '中古尊榮：利率較多種。1~12 期依貸款金額級距決定；13~24 期 = 貸款金額/100 + 888；25~59 期用前段與尾款回推，並以十位數無條件進位。';
-      }
+    function showError(msg) {
+      const errorBox = document.getElementById("errorBox");
+      errorBox.style.display = "block";
+      errorBox.innerText = msg;
     }
 
-    function updateSummary(loan, project, rate, commission) {
-      summaryAmount.textContent = money(loan);
-      summaryProject.textContent = projectNames[project];
-      summaryRate.textContent = percent(rate);
-      summaryCommission.textContent = money(commission);
+    function setSummary(projectName, loanWan, loanActual) {
+      document.getElementById("summary").innerHTML = `
+        <strong>${projectName}</strong><br>
+        輸入金額：${loanWan} 萬<br>
+        實際貸款金額：${moneyText(loanActual)}
+      `;
     }
 
-    function renderTable(project, loan, rate) {
-      const monthlyRate = rate / 100 / 12;
-      const commission = commissionFor(project, rate, loan);
-      updateSummary(loan, project, rate, commission);
+    function buildTable(headers, rows) {
+      const thead = document.getElementById("tableHead");
+      const tbody = document.getElementById("tableBody");
 
-      if (project === 'hao') {
-        tableTitle.textContent = '豪享專案試算結果';
-        resultHead.innerHTML = `
-          <tr>
-            <th>分期金額</th>
-            <th>期數</th>
-            <th>1~12期</th>
-            <th>13~24期</th>
-            <th>25~59期</th>
-            <th>尾款(50%)</th>
-            <th>佣金</th>
-            <th>客戶利率</th>
-          </tr>
-        `;
+      thead.innerHTML = `
+        <tr>
+          ${headers.map(h => `<th>${h}</th>`).join("")}
+        </tr>
+      `;
 
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          ${row.map(cell => `<td>${cell}</td>`).join("")}
+        </tr>
+      `).join("");
+    }
+
+    // ========= 各專案計算 =========
+    function calcHaoxiang(loan) {
+      const rates = [3.99, 4.25];
+      const rows = rates.map(rate => {
+        const r = rate / 100 / 12;
         const p1 = 8888;
-        const p13 = loan / 100 + 888;
+        const p2 = loan / 100 + 888;
+        const fv1 = fv(r, 12, p1, -loan);
+        const fv2 = fv(r, 12, p2, -fv1);
+        const p3 = roundUpInteger(pmt(r, 35, -fv2, loan * 0.5 / (1 + r)));
         const tail = loan * 0.5;
-        const bal24 = balanceAfterPayments(loan, monthlyRate, Array(12).fill(p1).concat(Array(12).fill(p13)));
-        const p25_59 = roundUpTo(pmt(monthlyRate, 35, bal24, tail / (1 + monthlyRate)), 1);
+        const commission = getCommissionCommon(rate, loan);
 
-        resultBody.innerHTML = `
-          <tr>
-            <td>${money(loan)}</td>
-            <td>60</td>
-            <td>${money(p1)}</td>
-            <td>${money(p13)}</td>
-            <td>${money(p25_59)}</td>
-            <td>${money(tail)}</td>
-            <td>${money(commission)}</td>
-            <td>${percent(rate)}</td>
-          </tr>
-        `;
-        return;
-      }
+        return [
+          moneyText(loan),
+          "60",
+          moneyText(p1),
+          moneyText(p2),
+          moneyText(p3),
+          moneyText(tail),
+          moneyText(commission),
+          formatPercent(rate)
+        ];
+      });
 
-      if (project === 'le') {
-        tableTitle.textContent = '樂享專案試算結果';
-        resultHead.innerHTML = `
-          <tr>
-            <th>貸款金額</th>
-            <th>期數</th>
-            <th>1~12期</th>
-            <th>13~59期</th>
-            <th>60期</th>
-            <th>佣金</th>
-            <th>客戶利率</th>
-          </tr>
-        `;
+      return {
+        headers: ["分期金額", "期數", "1~12期", "13~24期", "25~59期", "尾款(50%)", "佣金", "客戶利率"],
+        rows
+      };
+    }
 
+    function calcLexiang(loan) {
+      const rates = [3.99, 4.25];
+      const rows = rates.map(rate => {
+        const r = rate / 100 / 12;
         const p1 = 8888;
-        const p13_59 = loan / 100 + 888;
-        const bal59 = balanceAfterPayments(loan, monthlyRate, Array(12).fill(p1).concat(Array(47).fill(p13_59)));
-        const p60 = roundUpTo(bal59 * (1 + monthlyRate), 1);
+        const p2 = loan / 100 + 888;
+        const fv1 = fv(r, 12, p1, -loan);
+        const fv2 = fv(r, 47, p2, -fv1);
+        const p60 = roundUpInteger(pmt(r, 1, -fv2));
+        const commission = getCommissionCommon(rate, loan);
 
-        resultBody.innerHTML = `
-          <tr>
-            <td>${money(loan)}</td>
-            <td>60</td>
-            <td>${money(p1)}</td>
-            <td>${money(p13_59)}</td>
-            <td>${money(p60)}</td>
-            <td>${money(commission)}</td>
-            <td>${percent(rate)}</td>
-          </tr>
-        `;
-        return;
-      }
+        return [
+          moneyText(loan),
+          "60",
+          moneyText(p1),
+          moneyText(p2),
+          moneyText(p60),
+          moneyText(commission),
+          formatPercent(rate)
+        ];
+      });
 
-      if (project === 'gou') {
-        tableTitle.textContent = '樂購專案試算結果';
-        resultHead.innerHTML = `
-          <tr>
-            <th>貸款金額</th>
-            <th>期數</th>
-            <th>1~59期</th>
-            <th>60期</th>
-            <th>佣金</th>
-            <th>客戶利率</th>
-          </tr>
-        `;
+      return {
+        headers: ["貸款金額", "期數", "1~12期", "13~59期", "60期", "佣金", "客戶利率"],
+        rows
+      };
+    }
 
-        const p1_59 = loan / 100;
-        const bal59 = balanceAfterPayments(loan, monthlyRate, Array(59).fill(p1_59));
-        const p60 = roundUpTo(bal59 * (1 + monthlyRate), 1);
+    function calcLegou(loan) {
+      const rates = [3.99, 4.25];
+      const rows = rates.map(rate => {
+        const r = rate / 100 / 12;
+        const p1 = loan / 100;
+        const fv1 = fv(r, 59, p1, -loan);
+        const p60 = roundUpInteger(pmt(r, 1, -fv1));
+        const commission = getCommissionCommon(rate, loan);
 
-        resultBody.innerHTML = `
-          <tr>
-            <td>${money(loan)}</td>
-            <td>60</td>
-            <td>${money(p1_59)}</td>
-            <td>${money(p60)}</td>
-            <td>${money(commission)}</td>
-            <td>${percent(rate)}</td>
-          </tr>
-        `;
-        return;
-      }
+        return [
+          moneyText(loan),
+          "60",
+          moneyText(p1),
+          moneyText(p60),
+          moneyText(commission),
+          formatPercent(rate)
+        ];
+      });
 
-      // 中古尊榮
-      tableTitle.textContent = '中古尊榮試算結果';
-      resultHead.innerHTML = `
-        <tr>
-          <th>利率</th>
-          <th>貸款金額</th>
-          <th>1~12期</th>
-          <th>13~24期</th>
-          <th>25~59期</th>
-          <th>尾款</th>
-          <th>佣金</th>
-        </tr>
-      `;
+      return {
+        headers: ["貸款金額", "期數", "1~59期", "60期", "佣金", "客戶利率"],
+        rows
+      };
+    }
 
-      const p1 = first12ForZhong(loan);
+    function calcZhonggui(loan) {
+      const rates = [4.50, 4.75, 5.00, 5.25, 5.50, 5.75];
+      const p1 = getZhongguiFirst12(loan);
+
       if (p1 === null) {
-        resultBody.innerHTML = `
-          <tr>
-            <td colspan="7" class="error">貸款金額需介於 $1,000,000 ～ $5,000,000 才能使用中古尊榮專案。</td>
-          </tr>
-        `;
+        return {
+          error: "中古尊榮的貸款金額範圍為 100萬～500萬。請先調整後再試算。",
+          headers: [],
+          rows: []
+        };
+      }
+
+      const rows = rates.map(rate => {
+        const r = rate / 100 / 12;
+        const p2 = loan / 100 + 888;
+        const tail = loan * 0.5;
+
+        const fv1 = fv(r, 12, p1, -loan);
+        const fv2 = fv(r, 12, p2, -fv1);
+        const tailPV = -pv(r, 1, tail, 0);
+        const p3 = roundUpTo10(pmt(r, 35, -fv2, tailPV));
+        const commission = getCommissionZhonggui(rate, loan);
+
+        return [
+          formatPercent(rate).replace(".00%", "%"),
+          moneyText(loan),
+          moneyText(p1),
+          moneyText(p2),
+          moneyText(p3),
+          moneyText(tail),
+          moneyText(commission)
+        ];
+      });
+
+      return {
+        headers: ["利率", "貸款金額", "1~12期", "13~24期", "25~59期", "尾款", "佣金"],
+        rows
+      };
+    }
+
+    function render() {
+      clearTable();
+
+      const project = document.getElementById("project").value;
+      const loanWan = parseFloat(document.getElementById("loanWan").value);
+
+      if (!isFinite(loanWan) || loanWan <= 0) {
+        showError("請輸入正確的貸款金額（萬）。例如：100 代表 100 萬。");
         return;
       }
 
-      const p13 = loan / 100 + 888;
-      const tail = loan * 0.5;
-      const bal24 = balanceAfterPayments(loan, monthlyRate, Array(12).fill(p1).concat(Array(12).fill(p13)));
-      const p25_59 = roundUpTo(pmt(monthlyRate, 35, bal24, tail / (1 + monthlyRate)), 10);
+      const loan = actualLoanFromWan(loanWan);
 
-      resultBody.innerHTML = `
-        <tr>
-          <td>${percent(rate)}</td>
-          <td>${money(loan)}</td>
-          <td>${money(p1)}</td>
-          <td>${money(p13)}</td>
-          <td>${money(p25_59)}</td>
-          <td>${money(tail)}</td>
-          <td>${money(commission)}</td>
-        </tr>
-      `;
+      const projectNameMap = {
+        haoxiang: "豪享專案",
+        lexiang: "樂享專案",
+        legou: "樂購專案",
+        zhonggui: "中古尊榮"
+      };
+
+      setSummary(projectNameMap[project] || "方案", loanWan, loan);
+
+      let result;
+      let note = "";
+
+      if (project === "haoxiang") {
+        result = calcHaoxiang(loan);
+        note = "說明：此專案依你提供的 Excel 邏輯，會自動列出 3.99% 與 4.25% 兩種結果。";
+      } else if (project === "lexiang") {
+        result = calcLexiang(loan);
+        note = "說明：此專案依你提供的 Excel 邏輯，會自動列出 3.99% 與 4.25% 兩種結果。";
+      } else if (project === "legou") {
+        result = calcLegou(loan);
+        note = "說明：此專案依你提供的 Excel 邏輯，會自動列出 3.99% 與 4.25% 兩種結果。";
+      } else if (project === "zhonggui") {
+        result = calcZhonggui(loan);
+        if (result.error) {
+          showError(result.error);
+          return;
+        }
+        note = "說明：中古尊榮會自動列出 4.50%～5.75% 的多種利率結果，且 25~59 期採十位數無條件進位。";
+      }
+
+      buildTable(result.headers, result.rows);
+      document.getElementById("note").innerText = note;
     }
 
-    function recalc() {
-      const project = projectSelect.value;
-      const loanWan = Number(amountWanInput.value);
-      const loan = Math.max(0, loanWan * 10000);
-      const rate = Number(rateSelect.value || rateOptions[project][0]);
-      renderTable(project, loan, rate);
-    }
+    // ========= 事件綁定 =========
+    document.getElementById("calcBtn").addEventListener("click", render);
+    document.getElementById("project").addEventListener("change", render);
+    document.getElementById("loanWan").addEventListener("input", render);
 
-    projectSelect.addEventListener('change', () => {
-      buildRateOptions();
-      updateProjectNote();
-      recalc();
-    });
-
-    rateSelect.addEventListener('change', recalc);
-    amountWanInput.addEventListener('input', recalc);
-    calcBtn.addEventListener('click', recalc);
-
-    buildRateOptions();
-    updateProjectNote();
-    recalc();
+    // 預設載入時先算一次
+    render();
   </script>
 </body>
 </html>
