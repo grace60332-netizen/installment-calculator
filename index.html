@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>分期試算</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    max-width:800px;
+    margin:auto;
+    padding:30px;
+}
+
+input{
+    width:200px;
+    padding:10px;
+    font-size:18px;
+}
+
+button{
+    padding:10px 20px;
+    margin-left:10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#f3f3f3;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>商品分期試算</h1>
+
+<input
+id="amount"
+type="number"
+placeholder="輸入商品金額"
+/>
+
+<button onclick="calculate()">
+試算
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>期數</th>
+<th>利率</th>
+<th>每月付款</th>
+</tr>
+</thead>
+
+<tbody id="result">
+
+</tbody>
+
+</table>
+
+<script>
+
+function calculate(){
+
+let amount =
+Number(document.getElementById("amount").value);
+
+let plans = [
+
+{month:12,rate:0},
+{month:24,rate:0.02},
+{month:36,rate:0.03},
+{month:48,rate:0.05}
+
+];
+
+let html = "";
+
+plans.forEach(plan=>{
+
+let total =
+amount*(1+plan.rate);
+
+let monthly =
+Math.round(total/plan.month);
+
+html += `
+<tr>
+<td>${plan.month}期</td>
+<td>${plan.rate*100}%</td>
+<td>${monthly.toLocaleString()}元</td>
+</tr>
+`;
+
+});
+
+document.getElementById("result").innerHTML =
+html;
+
+}
+
+</script>
+
+</body>
+</html>
