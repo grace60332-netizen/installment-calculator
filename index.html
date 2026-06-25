@@ -5,198 +5,207 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>分期試算工具</title>
   <style>
-    :root{
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --line:#dfe4ee;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --primary:#2563eb;
-      --primary-dark:#1d4ed8;
-      --shadow:0 8px 30px rgba(15, 23, 42, 0.08);
-      --radius:18px;
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
     }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
-      background: linear-gradient(180deg, #f8fbff 0%, #f7f8fb 100%);
-      color:var(--text);
+    * {
+      box-sizing: border-box;
     }
 
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:32px 18px 48px;
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    .title{
-      font-size:28px;
-      font-weight:800;
-      margin:0 0 8px;
-      letter-spacing:.5px;
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
     }
 
-    .subtitle{
-      margin:0 0 22px;
-      color:var(--muted);
-      line-height:1.6;
+    .title {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      letter-spacing: 0.5px;
     }
 
-    .card{
-      background:var(--card);
-      border:1px solid rgba(223,228,238,.9);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:20px;
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
-    .controls{
-      display:grid;
-      grid-template-columns: 1.2fr 1fr auto;
-      gap:14px;
-      align-items:end;
-      margin-bottom:18px;
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      padding: 20px;
+      margin-bottom: 18px;
     }
 
-    .field label{
-      display:block;
-      font-size:14px;
-      font-weight:700;
-      margin-bottom:8px;
-      color:#374151;
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
     }
 
-    .field input,
-    .field select{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 14px;
-      font-size:16px;
-      outline:none;
-      background:#fff;
-      transition:.15s ease;
+    .field label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
-    .field input:focus,
-    .field select:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    .field small {
+      display: block;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.6;
     }
 
-    .btn{
-      border:none;
-      background:var(--primary);
-      color:#fff;
-      padding:12px 18px;
-      border-radius:14px;
-      font-size:16px;
-      font-weight:700;
-      cursor:pointer;
-      transition:.15s ease;
-      height:48px;
-      white-space:nowrap;
+    select,
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
     }
 
-    .btn:hover{ background:var(--primary-dark); }
-    .btn:active{ transform:translateY(1px); }
-
-    .hint{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
+    select:focus,
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
     }
 
-    .summary{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:12px;
-      margin:18px 0 6px;
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-top: 16px;
     }
 
-    .summary .box{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px 16px;
-      background:#fafcff;
+    button {
+      appearance: none;
+      border: 0;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.15s ease;
     }
 
-    .summary .label{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:6px;
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
     }
 
-    .summary .value{
-      font-size:20px;
-      font-weight:800;
-      line-height:1.25;
+    .ghost {
+      background: #e5e7eb;
+      color: #111827;
     }
 
-    .table-wrap{
-      overflow-x:auto;
-      margin-top:18px;
-      border:1px solid var(--line);
-      border-radius:16px;
+    .ghost:hover {
+      background: #d1d5db;
     }
 
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:920px;
-      background:#fff;
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
-    thead th{
-      background:#f3f7ff;
-      color:#1f3b75;
-      font-weight:800;
-      font-size:14px;
-      padding:14px 12px;
-      text-align:center;
-      border-bottom:1px solid var(--line);
+    .meta strong {
+      color: var(--text);
     }
 
-    tbody td{
-      padding:13px 12px;
-      text-align:center;
-      border-bottom:1px solid #eef2f7;
-      font-size:15px;
-      vertical-align:middle;
+    .notice {
+      background: var(--warn-bg);
+      border: 1px solid #fde68a;
+      color: var(--warn);
+      border-radius: 14px;
+      padding: 12px 14px;
+      line-height: 1.7;
+      margin-top: 12px;
+      display: none;
     }
 
-    tbody tr:nth-child(even){
-      background:#fbfcfe;
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 6px;
     }
 
-    tbody tr:hover{
-      background:#f8fbff;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
     }
 
-    .note{
-      margin-top:14px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: center;
+      white-space: nowrap;
     }
 
-    .bad{
-      color:#b91c1c;
-      font-weight:700;
+    th {
+      background: #f8fafc;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
 
-    @media (max-width: 860px){
-      .controls{
-        grid-template-columns:1fr;
+    tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 26px 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-weight: 700;
+      font-size: 13px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
       }
-      .summary{
-        grid-template-columns:1fr;
-      }
-      .btn{
-        width:100%;
+      .title {
+        font-size: 24px;
       }
     }
   </style>
@@ -205,11 +214,12 @@
   <div class="wrap">
     <h1 class="title">分期試算工具</h1>
     <p class="subtitle">
-      先選專案，再輸入<strong>貸款金額（萬）</strong>。系統會自動換算成元，並列出該專案所有利率的試算結果。
+      請先選擇專案，再輸入貸款金額（單位：<strong>萬</strong>）。<br />
+      例如輸入 <strong>100</strong> 代表 <strong>1,000,000 元</strong>，可避免少打或多打 0。
     </p>
 
     <div class="card">
-      <div class="controls">
+      <div class="grid">
         <div class="field">
           <label for="project">選擇專案</label>
           <select id="project">
@@ -218,6 +228,7 @@
             <option value="legou">樂購專案</option>
             <option value="zhonggu">中古尊榮</option>
           </select>
+          <small id="projectHint"></small>
         </div>
 
         <div class="field">
@@ -225,117 +236,89 @@
           <input
             id="amountWan"
             type="number"
-            inputmode="decimal"
-            step="1"
-            min="0"
-            placeholder="例如：100 表示 100 萬"
+            min="100"
+            max="500"
+            step="5"
+            value="100"
+            placeholder="例如 100 = 100萬"
           />
-        </div>
-
-        <button class="btn" id="calcBtn">開始試算</button>
-      </div>
-
-      <div class="hint">
-        例如輸入 <strong>100</strong> 代表 <strong>1,000,000 元</strong>。<br />
-        這版先把你目前的規則整理成單頁工具，之後若要完全對齊 Excel 的每一欄公式，只要改下方各方案的計算函式即可。
-      </div>
-
-      <div class="summary">
-        <div class="box">
-          <div class="label">目前專案</div>
-          <div class="value" id="summaryProject">—</div>
-        </div>
-        <div class="box">
-          <div class="label">輸入金額（萬）</div>
-          <div class="value" id="summaryWan">—</div>
-        </div>
-        <div class="box">
-          <div class="label">換算後金額（元）</div>
-          <div class="value" id="summaryAmount">—</div>
+          <small>可輸入 100～500，系統會自動換算成元後計算。</small>
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead id="tableHead"></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+      <div class="actions">
+        <button id="calcBtn">立即試算</button>
+        <button id="resetBtn" class="ghost">重算</button>
       </div>
 
-      <div class="note" id="noteArea"></div>
+      <div class="meta" id="summary"></div>
+      <div class="notice" id="notice"></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap" id="tableWrap">
+        <div class="empty">請先輸入金額並按「立即試算」。</div>
+      </div>
     </div>
   </div>
 
   <script>
-    // =========================
-    // 基礎工具
-    // =========================
-    const BASE_LOAN = 1000000;
+    const moneyFormatter = new Intl.NumberFormat("zh-TW", {
+      maximumFractionDigits: 0
+    });
 
-    function toNumber(value) {
-      const n = Number(value);
-      return Number.isFinite(n) ? n : NaN;
+    const projectSelect = document.getElementById("project");
+    const amountWanInput = document.getElementById("amountWan");
+    const projectHint = document.getElementById("projectHint");
+    const summary = document.getElementById("summary");
+    const notice = document.getElementById("notice");
+    const tableWrap = document.getElementById("tableWrap");
+    const calcBtn = document.getElementById("calcBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function formatMoney(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return "—";
+      return "$" + moneyFormatter.format(Math.round(value));
     }
 
-    function formatNTD(value) {
-      if (typeof value === "string") return value;
-      if (!Number.isFinite(value)) return "—";
-      return "$" + Math.round(value).toLocaleString("zh-Hant-TW");
-    }
-
-    function formatRate(rate) {
+    function formatPercent(rate) {
       return rate.toFixed(2) + "%";
     }
 
+    // Excel 的 ROUNDUP
+    // digits = 0：進位到整數
+    // digits = -1：進位到十位數
     function roundUp(value, digits = 0) {
-      if (!Number.isFinite(value)) return NaN;
-      const factor = Math.pow(10, digits);
-      return Math.ceil(value * factor) / factor;
+      if (!isFinite(value)) return NaN;
+      if (digits >= 0) {
+        const factor = Math.pow(10, digits);
+        return Math.ceil(value * factor) / factor;
+      }
+      const factor = Math.pow(10, -digits);
+      return Math.ceil(value / factor) * factor;
     }
 
-    function roundDownToTen(value) {
-      return Math.ceil(value / 10) * 10;
-    }
-
-    // Excel 相容風格的 PMT / FV
-    // 之後若要改成完全對齊某一版 Excel 公式，主要就是改這裡或各方案計算函式。
+    // Excel PMT 公式（保留 Excel 常見的正負號邏輯）
     function pmt(rate, nper, pv, fv = 0, type = 0) {
       if (rate === 0) {
-        return -(pv + fv) / nper;
+        return -(fv + pv) / nper;
       }
       const pow = Math.pow(1 + rate, nper);
-      const payment = (rate * (pv * pow + fv)) / ((1 + rate * type) * (pow - 1));
-      return -payment;
+      return -(rate * (fv + pv * pow)) / ((1 + rate * type) * (pow - 1));
     }
 
-    function fv(rate, nper, pmtValue, pv = 0, type = 0) {
-      if (rate === 0) {
-        return -(pv + pmtValue * nper);
+    // 用固定月付逐月推進餘額
+    function evolveBalance(balance, monthlyRate, months, payment) {
+      let b = balance;
+      for (let i = 0; i < months; i++) {
+        b = b * (1 + monthlyRate) - payment;
       }
-      const pow = Math.pow(1 + rate, nper);
-      return -(pv * pow + pmtValue * (1 + rate * type) * (pow - 1) / rate);
+      return b;
     }
 
-    function interpolate(rate, points) {
-      const sorted = [...points].sort((a, b) => a.rate - b.rate);
-
-      if (rate <= sorted[0].rate) return sorted[0].value;
-      if (rate >= sorted[sorted.length - 1].rate) return sorted[sorted.length - 1].value;
-
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const a = sorted[i];
-        const b = sorted[i + 1];
-        if (rate >= a.rate && rate <= b.rate) {
-          const t = (rate - a.rate) / (b.rate - a.rate);
-          return a.value + (b.value - a.value) * t;
-        }
-      }
-      return sorted[sorted.length - 1].value;
-    }
-
-    function getCommissionCommon(rate, amount) {
+    function commissionShared(loan, rate) {
       if (rate === 3.99) {
-        return amount >= 1500000 ? 10000 : 8000;
+        return loan >= 1500000 ? 10000 : 8000;
       }
       if (rate === 4.25) {
         return 15000;
@@ -343,286 +326,254 @@
       return 0;
     }
 
-    function getCommissionZhonggu(rate, amount) {
-      if (amount < 1000000 || rate < 4.5) return 0;
+    function commissionZhonggu(loan, rate) {
+      if (loan < 1000000 || rate < 4.5) return 0;
       if (rate >= 4.75) return 15000;
-      if (amount >= 1500000 && rate >= 4.5) return 10000;
+      if (loan >= 1500000 && rate >= 4.5) return 10000;
       return 8000;
     }
 
-    function getCommonFirst12(amount){
+    // 豪享 / 樂享 / 樂購 共用的 1~12 期基礎表
+    function basePayment1to12Standard(loan) {
+      if (loan < 1000000 || loan > 5000000) return null;
 
-    if(amount < 1000000 || amount > 5000000){
-        return "超出範圍";
+      if (loan >= 5000000) return 31888;
+      if (loan >= 4500000) return 28888;
+      if (loan >= 4000000) return 25888;
+      if (loan >= 3500000) return 22888;
+      if (loan >= 3000000) return 19888;
+      if (loan >= 2500000) return 16888;
+      if (loan >= 2000000) return 14888;
+      if (loan >= 1500000) return 12888;
+      return 8888;
     }
 
-    if(amount < 1500000) return 8888;
-    if(amount < 2000000) return 12888;
-    if(amount < 2500000) return 14888;
-    if(amount < 3000000) return 16888;
-    if(amount < 3500000) return 19888;
-    if(amount < 4000000) return 22888;
-    if(amount < 4500000) return 25888;
-    if(amount < 5000000) return 28888;
+    // 中古尊榮的 1~12 期基礎表
+    function basePayment1to12Zhonggu(loan) {
+      if (loan < 1000000 || loan > 5000000) return null;
 
-    return 31888;
+      if (loan >= 4600000) return 36888;
+      if (loan >= 4100000) return 32888;
+      if (loan >= 3600000) return 28888;
+      if (loan >= 3100000) return 24888;
+      if (loan >= 2600000) return 20888;
+      if (loan >= 2100000) return 16888;
+      if (loan >= 1600000) return 12888;
+      return 8888;
     }
 
-    // =========================
-    // 各專案計算
-    // =========================
-
-    function calcHaoxiang(amount) {
-      const rates = [3.99, 4.25];
-      return rates.map(rate => {
-        const first12 = getCommonFirst12(amount);;
-        const second12 = amount / 100 + 888;
-        const tail = amount * 0.5;
-
-        // 這裡先做成「依 100 萬範例值延伸」的簡單版本：
-        // 100 萬時會對應到你提供的示意結果。
-        const base25to59 = interpolate(rate, [
-          { rate: 3.99, value: 11918 },
-          { rate: 4.25, value: 12221 }
-        ]);
-        const stage3 = roundUp(base25to59 * (amount / BASE_LOAN), 0);
-
-        return {
-          rate,
-          first12,
-          second12,
-          stage3,
-          tail,
-          commission: getCommissionCommon(rate, amount)
-        };
-      });
+    function commonLoanText(loan) {
+      return formatMoney(loan);
     }
 
-    function calcLexiang(amount) {
-      const rates = [3.99, 4.25];
-      return rates.map(rate => {
-        const first12 = getCommonFirst12(amount);;
-        const stage13to59 = 10888;
-
-        const base60 = interpolate(rate, [
-          { rate: 3.99, value: 538262 },
-          { rate: 4.25, value: 549737 }
-        ]);
-        const stage60 = roundUp(base60 * (amount / BASE_LOAN), 0);
-
-        return {
-          rate,
-          first12,
-          stage13to59,
-          stage60,
-          commission: getCommissionCommon(rate, amount)
-        };
-      });
-    }
-
-    function calcLegou(amount) {
-      const rates = [3.99, 4.25];
-      return rates.map(rate => {
-        const stage1to59 = 10000;
-
-        const base60 = interpolate(rate, [
-          { rate: 3.99, value: 567567 },
-          { rate: 4.25, value: 579097 }
-        ]);
-        const stage60 = roundUp(base60 * (amount / BASE_LOAN), 0);
-
-        return {
-          rate,
-          stage1to59,
-          stage60,
-          commission: getCommissionCommon(rate, amount)
-        };
-      });
-    }
-
-    function getZhongguFirst12(amount) {
-      if (amount < 1000000) return "超出範圍";
-      if (amount < 1600000) return 8888;
-      if (amount < 2100000) return 12888;
-      if (amount < 2600000) return 16888;
-      if (amount < 3100000) return 20888;
-      if (amount < 3600000) return 24888;
-      if (amount < 4100000) return 28888;
-      if (amount < 4600000) return 32888;
-      if (amount <= 5000000) return 36888;
-      return "超出範圍";
-    }
-
-    function calcZhonggu(amount) {
-      const rates = [4.50, 4.75, 5.00, 5.25, 5.50, 5.75];
-
-      return rates.map(rate => {
-        const first12 = getZhongguFirst12(amount);
-        const second12 = amount / 100 + 888;
-        const tail = amount * 0.5;
-
-        const base25to59 = interpolate(rate, [
-          { rate: 4.50, value: 12520 },
-          { rate: 4.75, value: 12810 },
-          { rate: 5.00, value: 13110 },
-          { rate: 5.25, value: 13410 },
-          { rate: 5.50, value: 13710 },
-          { rate: 5.75, value: 14020 }
-        ]);
-
-        const stage3 = roundUp(base25to59 * (amount / BASE_LOAN), 0);
-
-        return {
-          rate,
-          first12,
-          second12,
-          stage3,
-          tail,
-          commission: getCommissionZhonggu(rate, amount)
-        };
-      });
-    }
-
-    // =========================
-    // 介面渲染
-    // =========================
-    const projectSelect = document.getElementById("project");
-    const amountWanInput = document.getElementById("amountWan");
-    const calcBtn = document.getElementById("calcBtn");
-    const tableHead = document.getElementById("tableHead");
-    const tableBody = document.getElementById("tableBody");
-    const noteArea = document.getElementById("noteArea");
-    const summaryProject = document.getElementById("summaryProject");
-    const summaryWan = document.getElementById("summaryWan");
-    const summaryAmount = document.getElementById("summaryAmount");
-
-    const PROJECTS = {
-      haoxiang: {
-        name: "豪享專案",
-        note: "利率固定為 3.99% / 4.25%，期數固定。佣金依利率與貸款金額判斷。",
-        columns: ["分期金額", "期數", "1~12期", "13~24期", "25~59期", "尾款(50%)", "佣金", "客戶利率"],
-        render(amount) {
-          const rows = calcHaoxiang(amount);
-          return rows.map(row => `
-            <tr>
-              <td>${formatNTD(amount)}</td>
-              <td>60</td>
-              <td>${formatNTD(row.first12)}</td>
-              <td>${formatNTD(row.second12)}</td>
-              <td>${formatNTD(row.stage3)}</td>
-              <td>${formatNTD(row.tail)}</td>
-              <td>${formatNTD(row.commission)}</td>
-              <td>${formatRate(row.rate)}</td>
-            </tr>
-          `).join("");
-        }
-      },
-      lexiang: {
-        name: "樂享專案",
-        note: "利率固定為 3.99% / 4.25%，期數固定。佣金規則與豪享相同。",
-        columns: ["貸款金額", "期數", "1~12期", "13~59期", "60期", "佣金", "客戶利率"],
-        render(amount) {
-          const rows = calcLexiang(amount);
-          return rows.map(row => `
-            <tr>
-              <td>${formatNTD(amount)}</td>
-              <td>60</td>
-              <td>${formatNTD(row.first12)}</td>
-              <td>${formatNTD(row.stage13to59)}</td>
-              <td>${formatNTD(row.stage60)}</td>
-              <td>${formatNTD(row.commission)}</td>
-              <td>${formatRate(row.rate)}</td>
-            </tr>
-          `).join("");
-        }
-      },
-      legou: {
-        name: "樂購專案",
-        note: "利率固定為 3.99% / 4.25%，期數固定。佣金規則與豪享相同。",
-        columns: ["貸款金額", "期數", "1~59期", "60期", "佣金", "客戶利率"],
-        render(amount) {
-          const rows = calcLegou(amount);
-          return rows.map(row => `
-            <tr>
-              <td>${formatNTD(amount)}</td>
-              <td>60</td>
-              <td>${formatNTD(row.stage1to59)}</td>
-              <td>${formatNTD(row.stage60)}</td>
-              <td>${formatNTD(row.commission)}</td>
-              <td>${formatRate(row.rate)}</td>
-            </tr>
-          `).join("");
-        }
-      },
-      zhonggu: {
-        name: "中古尊榮",
-        note: "利率多組，期數固定。佣金依貸款金額與利率條件判斷。1~12期依貸款金額區間變動。",
-        columns: ["利率", "貸款金額", "1~12期", "13~24期", "25~59期", "尾款", "佣金"],
-        render(amount) {
-          const rows = calcZhonggu(amount);
-          return rows.map(row => `
-            <tr>
-              <td>${formatRate(row.rate)}</td>
-              <td>${formatNTD(amount)}</td>
-              <td>${typeof row.first12 === "string" ? `<span class="bad">${row.first12}</span>` : formatNTD(row.first12)}</td>
-              <td>${formatNTD(row.second12)}</td>
-              <td>${formatNTD(row.stage3)}</td>
-              <td>${formatNTD(row.tail)}</td>
-              <td>${formatNTD(row.commission)}</td>
-            </tr>
-          `).join("");
-        }
-      }
-    };
-
-    function renderTable(projectKey, amountWan) {
-      const project = PROJECTS[projectKey];
-      const amount = amountWan * 10000;
-
-      summaryProject.textContent = project.name;
-      summaryWan.textContent = Number.isFinite(amountWan) ? amountWan.toLocaleString("zh-Hant-TW") : "—";
-      summaryAmount.textContent = Number.isFinite(amount) ? amount.toLocaleString("zh-Hant-TW") + " 元" : "—";
-
-      tableHead.innerHTML = `
-        <tr>${project.columns.map(col => `<th>${col}</th>`).join("")}</tr>
+    function renderTable(headers, rows) {
+      const thead = `
+        <thead>
+          <tr>
+            ${headers.map(h => `<th>${h}</th>`).join("")}
+          </tr>
+        </thead>
       `;
 
-      tableBody.innerHTML = project.render(amount);
-      noteArea.textContent = project.note;
+      const tbody = rows.length
+        ? `
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                ${row.map(cell => `<td>${cell}</td>`).join("")}
+              </tr>
+            `).join("")}
+          </tbody>
+        `
+        : `<tbody><tr><td class="empty" colspan="${headers.length}">沒有可顯示的資料</td></tr></tbody>`;
+
+      tableWrap.innerHTML = `<table>${thead}${tbody}</table>`;
     }
 
-    function calculateAndRender() {
-      const projectKey = projectSelect.value;
-      const amountWan = toNumber(amountWanInput.value);
+    function setNotice(message, show = false) {
+      notice.textContent = message;
+      notice.style.display = show ? "block" : "none";
+    }
 
-      if (!Number.isFinite(amountWan) || amountWan <= 0) {
-        summaryProject.textContent = PROJECTS[projectKey].name;
-        summaryWan.textContent = "請輸入金額";
-        summaryAmount.textContent = "請輸入金額";
-        tableHead.innerHTML = "";
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="8" style="padding:18px;color:#b91c1c;font-weight:700;">
-              請先輸入正確的貸款金額（萬），例如 100 代表 1,000,000 元。
-            </td>
-          </tr>
-        `;
-        noteArea.textContent = "";
+    function getProjectConfig(key) {
+      const projectMap = {
+        haoxiang: {
+          name: "豪享專案",
+          hint: "固定顯示 3.99% 與 4.25% 兩種利率；期數固定為 60 期。",
+          headers: ["貸款金額", "期數", "1~12期", "13~24期", "25~59期", "尾款(50%)", "佣金", "客戶利率"],
+          rates: [3.99, 4.25],
+          buildRows: (loan) => {
+            const p1 = basePayment1to12Standard(loan);
+            const p2 = loan / 100 + 888;
+            const tail = loan * 0.5;
+
+            return [3.99, 4.25].map(rate => {
+              const r = rate / 100 / 12;
+              const balance12 = evolveBalance(loan, r, 12, p1);
+              const balance24 = evolveBalance(balance12, r, 12, p2);
+              const p3 = roundUp(pmt(r, 35, -balance24, tail / (1 + r)), 0);
+              const comm = commissionShared(loan, rate);
+
+              return [
+                commonLoanText(loan),
+                "60",
+                formatMoney(p1),
+                formatMoney(p2),
+                formatMoney(p3),
+                formatMoney(tail),
+                formatMoney(comm),
+                formatPercent(rate)
+              ];
+            });
+          }
+        },
+
+        lexiang: {
+          name: "樂享專案",
+          hint: "固定顯示 3.99% 與 4.25% 兩種利率；期數固定為 60 期。",
+          headers: ["貸款金額", "期數", "1~12期", "13~59期", "60期", "佣金", "客戶利率"],
+          rates: [3.99, 4.25],
+          buildRows: (loan) => {
+            const p1 = basePayment1to12Standard(loan);
+            const p2 = loan / 100 + 888;
+
+            return [3.99, 4.25].map(rate => {
+              const r = rate / 100 / 12;
+
+              // 先跑完前 12 期，再跑 13~59 期，最後算第 60 期一次清償金額
+              const balance12 = evolveBalance(loan, r, 12, p1);
+              const balance59 = evolveBalance(balance12, r, 47, p2);
+              const p60 = roundUp(balance59 * (1 + r), 0);
+              const comm = commissionShared(loan, rate);
+
+              return [
+                commonLoanText(loan),
+                "60",
+                formatMoney(p1),
+                formatMoney(p2),
+                formatMoney(p60),
+                formatMoney(comm),
+                formatPercent(rate)
+              ];
+            });
+          }
+        },
+
+        legou: {
+          name: "樂購專案",
+          hint: "固定顯示 3.99% 與 4.25% 兩種利率；期數固定為 60 期。",
+          headers: ["貸款金額", "期數", "1~59期", "60期", "佣金", "客戶利率"],
+          rates: [3.99, 4.25],
+          buildRows: (loan) => {
+            const p1 = loan / 100;
+
+            return [3.99, 4.25].map(rate => {
+              const r = rate / 100 / 12;
+              const balance59 = evolveBalance(loan, r, 59, p1);
+              const p60 = roundUp(balance59 * (1 + r), 0);
+              const comm = commissionShared(loan, rate);
+
+              return [
+                commonLoanText(loan),
+                "60",
+                formatMoney(p1),
+                formatMoney(p60),
+                formatMoney(comm),
+                formatPercent(rate)
+              ];
+            });
+          }
+        },
+
+        zhonggu: {
+          name: "中古尊榮",
+          hint: "固定顯示 4.50% ～ 5.75% 的多個利率；佣金會依金額與利率條件變動。",
+          headers: ["利率", "貸款金額", "1~12期", "13~24期", "25~59期", "尾款", "佣金"],
+          rates: [4.50, 4.75, 5.00, 5.25, 5.50, 5.75],
+          buildRows: (loan) => {
+            const p1 = basePayment1to12Zhonggu(loan);
+            const p2 = loan / 100 + 888;
+            const tail = loan * 0.5;
+
+            return [4.50, 4.75, 5.00, 5.25, 5.50, 5.75].map(rate => {
+              const r = rate / 100 / 12;
+              const balance12 = evolveBalance(loan, r, 12, p1);
+              const balance24 = evolveBalance(balance12, r, 12, p2);
+              const p3 = roundUp(
+                pmt(r, 35, -balance24, tail / (1 + r)),
+                -1
+              );
+              const comm = commissionZhonggu(loan, rate);
+
+              return [
+                formatPercent(rate),
+                commonLoanText(loan),
+                formatMoney(p1),
+                formatMoney(p2),
+                formatMoney(p3),
+                formatMoney(tail),
+                formatMoney(comm)
+              ];
+            });
+          }
+        }
+      };
+
+      return projectMap[key];
+    }
+
+    function validateLoanWan(rawValue) {
+      const wan = Number(rawValue);
+      if (!isFinite(wan)) return { ok: false, msg: "請輸入數字。" };
+      if (wan < 100 || wan > 500) {
+        return { ok: false, msg: "貸款金額請輸入 100～500（萬元）之間。" };
+      }
+      return { ok: true, wan };
+    }
+
+    function calculate() {
+      const projectKey = projectSelect.value;
+      const config = getProjectConfig(projectKey);
+      const checked = validateLoanWan(amountWanInput.value);
+
+      projectHint.textContent = config.hint;
+
+      if (!checked.ok) {
+        summary.innerHTML = "";
+        setNotice(checked.msg, true);
+        tableWrap.innerHTML = `<div class="empty">${checked.msg}</div>`;
         return;
       }
 
-      renderTable(projectKey, amountWan);
+      setNotice("", false);
+
+      const loanWan = checked.wan;
+      const loan = Math.round(loanWan * 10000);
+
+      summary.innerHTML = `
+        <div>專案：<strong>${config.name}</strong></div>
+        <div>輸入金額：<strong>${loanWan}</strong> 萬</div>
+        <div>實際貸款金額：<strong>${formatMoney(loan)}</strong></div>
+        <div>說明：<strong>1 萬 = 10,000 元</strong></div>
+      `;
+
+      const rows = config.buildRows(loan);
+      renderTable(config.headers, rows);
     }
 
-    calcBtn.addEventListener("click", calculateAndRender);
-    projectSelect.addEventListener("change", calculateAndRender);
-    amountWanInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") calculateAndRender();
-    });
+    function resetAll() {
+      projectSelect.value = "haoxiang";
+      amountWanInput.value = 100;
+      calculate();
+    }
 
-    // 預設值：100 萬
-    amountWanInput.value = 100;
-    calculateAndRender();
+    projectSelect.addEventListener("change", calculate);
+    amountWanInput.addEventListener("input", calculate);
+    calcBtn.addEventListener("click", calculate);
+    resetBtn.addEventListener("click", resetAll);
+
+    // 進入頁面先顯示第一版結果
+    calculate();
   </script>
 </body>
 </html>
