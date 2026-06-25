@@ -246,7 +246,6 @@
 
       <div class="actions">
         <button id="calcBtn">立即試算</button>
-        <button id="resetBtn" class="ghost">重算</button>
       </div>
 
       <div class="meta" id="summary"></div>
@@ -549,9 +548,7 @@
 
       summary.innerHTML = `
         <div>專案：<strong>${config.name}</strong></div>
-        <div>輸入金額：<strong>${loanWan}</strong> 萬</div>
         <div>實際貸款金額：<strong>${formatMoney(loan)}</strong></div>
-        <div>說明：<strong>1 萬 = 10,000 元</strong></div>
       `;
 
       const rows = config.buildRows(loan);
