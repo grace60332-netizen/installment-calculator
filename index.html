@@ -215,6 +215,7 @@
     <h1 class="title">分期試算工具</h1>
     <p class="subtitle">
       請先選擇專案，再輸入貸款金額（單位：<strong>萬</strong>）。<br />
+      例如輸入 <strong>100</strong> 代表 <strong>1,000,000 元</strong>，可避免少打或多打 0。
     </p>
 
     <div class="card">
@@ -226,26 +227,8 @@
             <option value="lexiang">樂享專案</option>
             <option value="legou">樂購專案</option>
             <option value="zhonggu">中古尊榮</option>
-            <option value="toyota">Toyota零利率</option>
           </select>
           <small id="projectHint"></small>
-        </div>
-
-        <div 
-          class="field" 
-          id="toyotaArea"
-          style="display:none;">
-
-        <label for="toyotaPlan">
-
-        Toyota方案
-
-        </label>
-
-        <select id="toyotaPlan">
-
-        </select>
-
         </div>
 
         <div class="field">
@@ -259,12 +242,13 @@
             value="100"
             placeholder="例如 100 = 100萬"
           />
+          <small>可輸入 100～500，系統會自動換算成元後計算。</small>
         </div>
       </div>
 
       <div class="actions">
         <button id="calcBtn">立即試算</button>
-        <button id="resetBtn" class="ghost">重設</button>
+        <button id="resetBtn" class="ghost">重算</button>
       </div>
 
       <div class="meta" id="summary"></div>
@@ -273,6 +257,7 @@
 
     <div class="card">
       <div class="table-wrap" id="tableWrap">
+        <div class="empty">請先輸入金額並按「立即試算」。</div>
       </div>
     </div>
   </div>
@@ -281,156 +266,16 @@
     const moneyFormatter = new Intl.NumberFormat("zh-TW", {
       maximumFractionDigits: 0
     });
-    const toyotaPlans=[
-    
-    {
-    name:"30萬30期",
-    amount:300000,
-    month:30
-    },
 
-    {
-    name:"40萬30期",
-    amount:400000,
-    month:30
-    },
-
-    {
-    name:"50萬30期",
-    amount:500000,
-    month:30
-    },
-
-    {
-    name:"50萬50期",
-    amount:500000,
-    month:50
-    },
-
-    {
-    name:"60萬36期",
-    amount:600000,
-    month:36
-    },
-
-    {
-    name:"70萬40期",
-    amount:700000,
-    month:40
-    },
-
-    {
-    name:"80萬60期",
-    amount:800000,
-    month:60
-    },
-
-    {
-    name:"100萬24期",
-    amount:1000000,
-    month:24
-    },
-
-    {
-    name:"100萬30期",
-    amount:1000000,
-    month:30
-    },
-
-    {
-    name:"100萬36期",
-    amount:1000000,
-    month:36
-    },
-
-    {
-    name:"100萬40期",
-    amount:1000000,
-    month:40
-    },
-
-    {
-    name:"100萬48期",
-    amount:1000000,
-    month:48
-    },
-
-    {
-    name:"60萬40期",
-    amount:600000,
-    month:40
-    },
-
-    {
-    name:"63.5萬40期",
-    amount:635000,
-    month:40
-    },
-
-    {
-    name:"60萬24期",
-    amount:600000,
-    month:24
-    },
-    
-    {
-    name:"40萬40期",
-    amount:400000,
-    month:40
-    },
-
-    {
-    name:"80萬50期",
-    amount:800000,
-    month:50
-    },
-
-    {
-    name:"50萬40期",
-    amount:500000,
-    month:40
-    },
-
-    {
-    name:"24萬24期",
-    amount:240000,
-    month:24
-    },
-
-    {
-    name:"30萬24期",
-    amount:300000,
-    month:24
-    },
-
-    {
-    name:"20萬20期",
-    amount:200000,
-    month:20
-    }
-
-    ];
     const projectSelect = document.getElementById("project");
     const amountWanInput = document.getElementById("amountWan");
     const projectHint = document.getElementById("projectHint");
     const summary = document.getElementById("summary");
     const notice = document.getElementById("notice");
     const tableWrap = document.getElementById("tableWrap");
-    const toyotaArea = document.getElementById("toyotaArea");
-    const toyotaPlan = document.getElementById("toyotaPlan");
     const calcBtn = document.getElementById("calcBtn");
     const resetBtn = document.getElementById("resetBtn");
 
-    function initToyotaPlans(){
-    toyotaPlan.innerHTML="";
-    toyotaPlans.forEach(plan=>{
-    const option=document.createElement("option");
-    option.value=plan.name;
-    option.textContent=plan.name;
-    toyotaPlan.appendChild(option);
-    });
-
-    }
     function formatMoney(value) {
       if (value === null || value === undefined || Number.isNaN(value)) return "—";
       return "$" + moneyFormatter.format(Math.round(value));
@@ -461,60 +306,6 @@
       const pow = Math.pow(1 + rate, nper);
       return -(rate * (fv + pv * pow)) / ((1 + rate * type) * (pow - 1));
     }
-    function roundToNearest(value, step) {
-  return Math.round(value / step) * step;
-}
-
-function pv(rate, nper, pmtValue, fv = 0, type = 0) {
-  if (rate === 0) {
-    return -(fv + pmtValue * nper);
-  }
-  const pow = Math.pow(1 + rate, nper);
-  return -(
-    fv +
-    pmtValue * (1 + rate * type) * (pow - 1) / rate
-  ) / pow;
-}
-
-// 用二分法找 RATE
-function rate(nper, pmtValue, pvValue, fv = 0, type = 0) {
-  const f = (r) => {
-    if (Math.abs(r) < 1e-12) {
-      return pvValue + pmtValue * nper + fv;
-    }
-    const pow = Math.pow(1 + r, nper);
-    return pvValue * pow + pmtValue * (1 + r * type) * (pow - 1) / r + fv;
-  };
-
-  let lo = -0.9999;
-  let hi = 1;
-  let flo = f(lo);
-  let fhi = f(hi);
-
-  while (flo * fhi > 0 && hi < 100) {
-    hi *= 2;
-    fhi = f(hi);
-  }
-
-  if (flo * fhi > 0) return NaN;
-
-  for (let i = 0; i < 100; i++) {
-    const mid = (lo + hi) / 2;
-    const fmid = f(mid);
-
-    if (Math.abs(fmid) < 1e-12) return mid;
-
-    if (flo * fmid <= 0) {
-      hi = mid;
-      fhi = fmid;
-    } else {
-      lo = mid;
-      flo = fmid;
-    }
-  }
-
-  return (lo + hi) / 2;
-}
 
     // 用固定月付逐月推進餘額
     function evolveBalance(balance, monthlyRate, months, payment) {
@@ -730,73 +521,7 @@ function rate(nper, pmtValue, pvValue, fv = 0, type = 0) {
 
       return projectMap[key];
     }
-function calculateToyota() {
-  const selectedPlan = toyotaPlans.find(plan => plan.name === toyotaPlan.value) || toyotaPlans[0];
 
-  if (!selectedPlan) {
-    tableWrap.innerHTML = `<div class="empty">找不到 Toyota 方案</div>`;
-    summary.innerHTML = "";
-    return;
-  }
-
-  const loan = selectedPlan.amount;
-  const months = selectedPlan.month;
-
-  // 依你 Excel 內的設定
-  const systemIRR = 0.04511;   // 實質IRR(系統)
-  const dlrCap = 10080;        // DLR補貼款上限
-  const hondaCap = 6720;       // 和泰補貼款上限
-  const hondaShare = 0.4;      // 和泰補貼占比
-
-  const monthlyPayment = loan / months;
-
-  // C欄：總補貼款
-  const totalSubsidy = roundToNearest(
-    loan - pv(systemIRR / 12, months, monthlyPayment),
-    100
-  );
-
-  // I欄：和泰補貼款
-  const hondaSubsidy = Math.min(totalSubsidy * hondaShare, hondaCap);
-
-  // D欄：DLR負擔
-  const dlrBurden = totalSubsidy - hondaSubsidy;
-
-  // H欄：最小DLR補貼
-  const minDlrSubsidy = Math.min(dlrBurden, dlrCap);
-
-  // F欄：最大月付款
-  const maxMonthlyPayment =
-    dlrBurden <= dlrCap
-      ? monthlyPayment
-      : roundUp(pmt(systemIRR / 12, months, -loan + minDlrSubsidy), 0);
-
-  // G欄：客戶利率
-  const customerRateAnnual = roundUp(
-    rate(months, maxMonthlyPayment, -loan, 0, 0) * 12,
-    5
-  );
-
-  projectHint.textContent = "Toyota零利率專案：依所選方案自動計算結果。";
-
-  summary.innerHTML = `
-    <div>Toyota方案：<strong>${selectedPlan.name}</strong></div>
-    <div>貸款金額：<strong>${formatMoney(loan)}</strong></div>
-    <div>期數：<strong>${months} 期</strong></div>
-  `;
-
-  renderTable(
-    ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
-    [[
-      formatMoney(loan),
-      formatMoney(monthlyPayment),
-      formatMoney(dlrBurden),
-      formatMoney(maxMonthlyPayment),
-      formatPercent(customerRateAnnual * 100),
-      formatMoney(minDlrSubsidy)
-    ]]
-  );
-}
     function validateLoanWan(rawValue) {
       const wan = Number(rawValue);
       if (!isFinite(wan)) return { ok: false, msg: "請輸入數字。" };
@@ -806,24 +531,9 @@ function calculateToyota() {
       return { ok: true, wan };
     }
 
-
     function calculate() {
       const projectKey = projectSelect.value;
-      const selectedToyotaPlan = toyotaPlan.value;
-      if(projectKey==="toyota"){
-
-          calculateToyota();
-
-          return;
-
-      }
-      let config = null;
-
-      if(projectKey!="toyota"){
-
-          config = getProjectConfig(projectKey);
-
-      }
+      const config = getProjectConfig(projectKey);
       const checked = validateLoanWan(amountWanInput.value);
 
       projectHint.textContent = config.hint;
@@ -842,38 +552,27 @@ function calculateToyota() {
 
       summary.innerHTML = `
         <div>專案：<strong>${config.name}</strong></div>
+        <div>輸入金額：<strong>${loanWan}</strong> 萬</div>
         <div>實際貸款金額：<strong>${formatMoney(loan)}</strong></div>
+        <div>說明：<strong>1 萬 = 10,000 元</strong></div>
       `;
 
       const rows = config.buildRows(loan);
       renderTable(config.headers, rows);
     }
 
-function resetAll() {
-  projectSelect.value = "haoxiang";
-  toyotaArea.style.display = "none";
-  amountWanInput.value = 100;
-  calculate();
-}
+    function resetAll() {
+      projectSelect.value = "haoxiang";
+      amountWanInput.value = 100;
+      calculate();
+    }
 
-
-projectSelect.addEventListener("change", () => {
-  if (projectSelect.value === "toyota") {
-    toyotaArea.style.display = "block";
-  } else {
-    toyotaArea.style.display = "none";
-  }
-  calculate();
-});
-
-toyotaPlan.addEventListener("change", calculate);
+    projectSelect.addEventListener("change", calculate);
     amountWanInput.addEventListener("input", calculate);
     calcBtn.addEventListener("click", calculate);
     resetBtn.addEventListener("click", resetAll);
 
     // 進入頁面先顯示第一版結果
-    initToyotaPlans();
-
     calculate();
   </script>
 </body>
