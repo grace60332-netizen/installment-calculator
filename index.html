@@ -226,8 +226,26 @@
             <option value="lexiang">樂享專案</option>
             <option value="legou">樂購專案</option>
             <option value="zhonggu">中古尊榮</option>
+            <option value="toyota">Toyota零利率</option>
           </select>
           <small id="projectHint"></small>
+        </div>
+
+        <div 
+          class="field" 
+          id="toyotaArea"
+          style="display:none;">
+
+        <label for="toyotaPlan">
+
+        Toyota方案
+
+        </label>
+
+        <select id="toyotaPlan">
+
+        </select>
+
         </div>
 
         <div class="field">
@@ -262,16 +280,156 @@
     const moneyFormatter = new Intl.NumberFormat("zh-TW", {
       maximumFractionDigits: 0
     });
+    const toyotaPlans=[
+    
+    {
+    name:"30萬30期",
+    amount:300000,
+    month:30
+    },
 
+    {
+    name:"40萬30期",
+    amount:400000,
+    month:30
+    },
+
+    {
+    name:"50萬30期",
+    amount:500000,
+    month:30
+    },
+
+    {
+    name:"50萬50期",
+    amount:500000,
+    month:50
+    },
+
+    {
+    name:"60萬36期",
+    amount:600000,
+    month:36
+    },
+
+    {
+    name:"70萬40期",
+    amount:700000,
+    month:40
+    },
+
+    {
+    name:"80萬60期",
+    amount:800000,
+    month:60
+    },
+
+    {
+    name:"100萬24期",
+    amount:1000000,
+    month:24
+    },
+
+    {
+    name:"100萬30期",
+    amount:1000000,
+    month:30
+    },
+
+    {
+    name:"100萬36期",
+    amount:1000000,
+    month:36
+    },
+
+    {
+    name:"100萬40期",
+    amount:1000000,
+    month:40
+    },
+
+    {
+    name:"100萬48期",
+    amount:1000000,
+    month:48
+    },
+
+    {
+    name:"60萬40期",
+    amount:600000,
+    month:40
+    },
+
+    {
+    name:"63.5萬40期",
+    amount:635000,
+    month:40
+    },
+
+    {
+    name:"60萬24期",
+    amount:600000,
+    month:24
+    },
+    
+    {
+    name:"40萬40期",
+    amount:400000,
+    month:40
+    },
+
+    {
+    name:"80萬50期",
+    amount:800000,
+    month:50
+    },
+
+    {
+    name:"50萬40期",
+    amount:500000,
+    month:40
+    },
+
+    {
+    name:"24萬24期",
+    amount:240000,
+    month:24
+    },
+
+    {
+    name:"30萬24期",
+    amount:300000,
+    month:24
+    },
+
+    {
+    name:"20萬20期",
+    amount:200000,
+    month:20
+    }
+
+    ];
     const projectSelect = document.getElementById("project");
     const amountWanInput = document.getElementById("amountWan");
     const projectHint = document.getElementById("projectHint");
     const summary = document.getElementById("summary");
     const notice = document.getElementById("notice");
     const tableWrap = document.getElementById("tableWrap");
+    const toyotaArea = document.getElementById("toyotaArea");
+    const toyotaPlan = document.getElementById("toyotaPlan");
     const calcBtn = document.getElementById("calcBtn");
     const resetBtn = document.getElementById("resetBtn");
 
+    function initToyotaPlans(){
+    toyotaPlan.innerHTML="";
+    toyotaPlans.forEach(plan=>{
+    const option=document.createElement("option");
+    option.value=plan.name;
+    option.textContent=plan.name;
+    toyotaPlan.appendChild(option);
+    });
+
+    }
     function formatMoney(value) {
       if (value === null || value === undefined || Number.isNaN(value)) return "—";
       return "$" + moneyFormatter.format(Math.round(value));
@@ -561,7 +719,17 @@
       calculate();
     }
 
-    projectSelect.addEventListener("change", calculate);
+    projectSelect.addEventListener("change",()=>{
+    if(projectSelect.value==="toyota"){
+    toyotaArea.style.display="block";
+    }
+    else{
+    toyotaArea.style.display="none";
+    }
+    initToyotaPlans();
+
+    calculate();
+    });
     amountWanInput.addEventListener("input", calculate);
     calcBtn.addEventListener("click", calculate);
     resetBtn.addEventListener("click", resetAll);
