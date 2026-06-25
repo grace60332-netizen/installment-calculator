@@ -350,6 +350,24 @@
       return 8000;
     }
 
+    function getCommonFirst12(amount){
+
+    if(amount < 1000000 || amount > 5000000){
+        return "超出範圍";
+    }
+
+    if(amount < 1500000) return 8888;
+    if(amount < 2000000) return 12888;
+    if(amount < 2500000) return 14888;
+    if(amount < 3000000) return 16888;
+    if(amount < 3500000) return 19888;
+    if(amount < 4000000) return 22888;
+    if(amount < 4500000) return 25888;
+    if(amount < 5000000) return 28888;
+
+    return 31888;
+    }
+
     // =========================
     // 各專案計算
     // =========================
@@ -357,7 +375,7 @@
     function calcHaoxiang(amount) {
       const rates = [3.99, 4.25];
       return rates.map(rate => {
-        const first12 = 8888;
+        const first12 = getCommonFirst12(amount);;
         const second12 = amount / 100 + 888;
         const tail = amount * 0.5;
 
@@ -383,7 +401,7 @@
     function calcLexiang(amount) {
       const rates = [3.99, 4.25];
       return rates.map(rate => {
-        const first12 = 8888;
+        const first12 = getCommonFirst12(amount);;
         const stage13to59 = 10888;
 
         const base60 = interpolate(rate, [
