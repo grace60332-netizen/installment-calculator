@@ -1,1 +1,152 @@
-
+{
+  "appTitle": "分期試算工具",
+  "amountUnit": 10000,
+  "defaultLoanWanMin": 100,
+  "defaultLoanWanMax": 500,
+  "defaultLoanWanStep": 5,
+  "projects": [
+    {
+      "id": "haoxiang",
+      "name": "豪享專案",
+      "type": "standard",
+      "enabled": true,
+      "defaultTerm": 60,
+      "customerRates": [3.99, 4.25],
+      "commissionRules": [
+        { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
+        { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
+      ],
+      "paymentRules": {
+        "base1to12Type": "standard",
+        "phase1to12Fixed": [
+          { "minLoan": 1000000, "value": 8888 },
+          { "minLoan": 1500000, "value": 12888 },
+          { "minLoan": 2000000, "value": 14888 },
+          { "minLoan": 2500000, "value": 16888 },
+          { "minLoan": 3000000, "value": 19888 },
+          { "minLoan": 3500000, "value": 22888 },
+          { "minLoan": 4000000, "value": 25888 },
+          { "minLoan": 4500000, "value": 28888 },
+          { "minLoan": 5000000, "value": 31888 }
+        ],
+        "phase13to24Formula": "loan/100+888",
+        "phase25to59Formula": "excel_pmt_like",
+        "tailRatio": 0.5,
+        "rounding": 0
+      },
+      "summaryColumns": ["貸款金額", "期數", "1~12期", "13~24期", "25~59期", "尾款(50%)", "佣金", "客戶利率"]
+    },
+    {
+      "id": "lexiang",
+      "name": "樂享專案",
+      "type": "standard",
+      "enabled": true,
+      "defaultTerm": 60,
+      "customerRates": [3.99, 4.25],
+      "commissionRules": [
+        { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
+        { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
+      ],
+      "paymentRules": {
+        "base1to12Type": "standard",
+        "phase1to12Fixed": [
+          { "minLoan": 1000000, "value": 8888 },
+          { "minLoan": 1500000, "value": 12888 },
+          { "minLoan": 2000000, "value": 14888 },
+          { "minLoan": 2500000, "value": 16888 },
+          { "minLoan": 3000000, "value": 19888 },
+          { "minLoan": 3500000, "value": 22888 },
+          { "minLoan": 4000000, "value": 25888 },
+          { "minLoan": 4500000, "value": 28888 },
+          { "minLoan": 5000000, "value": 31888 }
+        ],
+        "phase13to59Formula": "loan/100+888",
+        "phase60Formula": "excel_pmt_like_single_payment",
+        "rounding": 0
+      },
+      "summaryColumns": ["貸款金額", "期數", "1~12期", "13~59期", "60期", "佣金", "客戶利率"]
+    },
+    {
+      "id": "legou",
+      "name": "樂購專案",
+      "type": "standard",
+      "enabled": true,
+      "defaultTerm": 60,
+      "customerRates": [3.99, 4.25],
+      "commissionRules": [
+        { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
+        { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
+      ],
+      "paymentRules": {
+        "phase1to59Formula": "loan/100",
+        "phase60Formula": "excel_pmt_like_single_payment",
+        "rounding": 0
+      },
+      "summaryColumns": ["貸款金額", "期數", "1~59期", "60期", "佣金", "客戶利率"]
+    },
+    {
+      "id": "zhonggu",
+      "name": "中古尊榮",
+      "type": "standard",
+      "enabled": true,
+      "defaultTerm": 60,
+      "customerRates": [4.50, 4.75, 5.00, 5.25, 5.50, 5.75],
+      "commissionRules": [
+        { "minLoan": 1000000, "rateMin": 4.5, "rateMax": 4.75, "commission": 8000 },
+        { "minLoan": 1500000, "rateMin": 4.75, "rateMax": 99, "commission": 15000 },
+        { "minLoan": 1500000, "rateMin": 4.5, "rateMax": 4.75, "commission": 10000 }
+      ],
+      "paymentRules": {
+        "base1to12Type": "zhonggu",
+        "phase1to12Fixed": [
+          { "minLoan": 1000000, "value": 8888 },
+          { "minLoan": 1600000, "value": 12888 },
+          { "minLoan": 2100000, "value": 16888 },
+          { "minLoan": 2600000, "value": 20888 },
+          { "minLoan": 3100000, "value": 24888 },
+          { "minLoan": 3600000, "value": 28888 },
+          { "minLoan": 4100000, "value": 32888 },
+          { "minLoan": 4600000, "value": 36888 }
+        ],
+        "phase13to24Formula": "loan/100+888",
+        "phase25to59Formula": "excel_pmt_like_ten_rounding",
+        "tailRatio": 0.5,
+        "rounding": -1
+      },
+      "summaryColumns": ["利率", "貸款金額", "1~12期", "13~24期", "25~59期", "尾款", "佣金"]
+    },
+    {
+      "id": "toyota_zero_interest",
+      "name": "TOYOTA零利率專案",
+      "type": "toyota_zero_interest",
+      "enabled": true,
+      "planSelectorLabel": "適用專案",
+      "termInputLabel": "客戶期數",
+      "loanInputLabel": "客戶貸款金額",
+      "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
+      "plans": [
+        { "id": "p30_30", "name": "30萬30期", "subsidyAmount": 300000, "subsidyTerm": 30 },
+        { "id": "p40_30", "name": "40萬30期", "subsidyAmount": 400000, "subsidyTerm": 30 },
+        { "id": "p50_30", "name": "50萬30期", "subsidyAmount": 500000, "subsidyTerm": 30 },
+        { "id": "p50_50", "name": "50萬50期", "subsidyAmount": 500000, "subsidyTerm": 50 },
+        { "id": "p60_36", "name": "60萬36期", "subsidyAmount": 600000, "subsidyTerm": 36 },
+        { "id": "p70_40", "name": "70萬40期", "subsidyAmount": 700000, "subsidyTerm": 40 },
+        { "id": "p80_60", "name": "80萬60期", "subsidyAmount": 800000, "subsidyTerm": 60 },
+        { "id": "p100_24", "name": "100萬24期", "subsidyAmount": 1000000, "subsidyTerm": 24 },
+        { "id": "p100_30", "name": "100萬30期", "subsidyAmount": 1000000, "subsidyTerm": 30 },
+        { "id": "p100_36", "name": "100萬36期", "subsidyAmount": 1000000, "subsidyTerm": 36 },
+        { "id": "p100_40", "name": "100萬40期", "subsidyAmount": 1000000, "subsidyTerm": 40 },
+        { "id": "p100_48", "name": "100萬48期", "subsidyAmount": 1000000, "subsidyTerm": 48 },
+        { "id": "p60_40", "name": "60萬40期", "subsidyAmount": 600000, "subsidyTerm": 40 },
+        { "id": "p635_40", "name": "63.5萬40期", "subsidyAmount": 635000, "subsidyTerm": 40 },
+        { "id": "p60_24", "name": "60萬24期", "subsidyAmount": 600000, "subsidyTerm": 24 },
+        { "id": "p40_40", "name": "40萬40期", "subsidyAmount": 400000, "subsidyTerm": 40 },
+        { "id": "p80_50", "name": "80萬50期", "subsidyAmount": 800000, "subsidyTerm": 50 },
+        { "id": "p50_40", "name": "50萬40期", "subsidyAmount": 500000, "subsidyTerm": 40 },
+        { "id": "p24_24", "name": "24萬24期", "subsidyAmount": 240000, "subsidyTerm": 24 },
+        { "id": "p30_24", "name": "30萬24期", "subsidyAmount": 300000, "subsidyTerm": 24 },
+        { "id": "p20_20", "name": "20萬20期", "subsidyAmount": 200000, "subsidyTerm": 20 }
+      ]
+    }
+  ]
+}
