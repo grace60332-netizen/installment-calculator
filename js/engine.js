@@ -180,76 +180,12 @@
   }
 
   function calculateToyota(project, request) {
-    const loan = toLoanAmount(request);
-    const term = Number(request.term);
-    const planId = request.planId;
-    const plan = (project.plans || []).find(p => p.id === planId) || project.plans?.[0];
-
-    if (!plan) {
-      throw new Error("找不到 TOYOTA 適用專案。");
-    }
-
-    if (!Number.isFinite(loan)) {
-      throw new Error("TOYOTA：貸款金額格式錯誤。");
-    }
-
-    if (!Number.isFinite(term) || term <= 0) {
-      throw new Error("TOYOTA：期數格式錯誤。");
-    }
-
-    const monthlyPayment = Finance.ROUNDUP(loan / term, 0);
-
-    /**
-     * 這裡先保留為 TOYOTA 初版公式。
-     * 等你要完全對 Excel 時，我們再把 Excel 裡的 RATE / PV / ROUNDUP / DLR 補貼公式逐欄翻譯進來。
-     */
-    const nominalRate = getToyotaNominalRate(plan.subsidyAmount, plan.subsidyTerm);
-    const monthlyRate = nominalRate / 12;
-
-    const zeroMonthly = plan.subsidyAmount / plan.subsidyTerm;
-    const interestMonthly = Finance.PMT(monthlyRate, plan.subsidyTerm, -plan.subsidyAmount);
-
-    const totalSubsidy = Finance.ROUNDUP(
-      (interestMonthly - zeroMonthly) * plan.subsidyTerm,
-      -2
-    );
-
-    const dlrCap = Finance.ROUNDUP(totalSubsidy * 0.6, -2);
-    const htCap = Finance.ROUNDUP(totalSubsidy * 0.4, -2);
-
-    const estimatedTotalSubsidy = Finance.ROUNDUP(loan * 0.1, -2);
-    const htBurden = Math.min(Finance.ROUNDUP(estimatedTotalSubsidy * 0.4, -2), htCap);
-    const dlrBurden = estimatedTotalSubsidy - htBurden;
-
-    const minDlrSubsidy = Math.min(dlrBurden, dlrCap);
-    const maxMonthlyPayment = Finance.ROUNDUP(
-      Finance.PMT(monthlyRate, term, -(loan - minDlrSubsidy)),
-      0
-    );
-
-    const customerMonthlyRate = Finance.RATE(term, -maxMonthlyPayment, loan, 0, 0, 0.01);
-    const customerRate = Number.isFinite(customerMonthlyRate)
-      ? customerMonthlyRate * 12 * 100
-      : NaN;
-
-    return {
-      projectId: project.id,
-      projectName: project.name,
-      selectedPlan: plan,
-      columns: getColumns(project),
-      rows: [
-        {
-          loanAmount: loan,
-          monthlyPayment,
-          dlrBurden,
-          maxMonthlyPayment,
-          customerRate,
-          minDlrSubsidy
-        }
-      ]
-    };
+  if (!global.ToyotaProject || typeof global.ToyotaProject.calculate !== "function") {
+    throw new Error("TOYOTA公式尚未載入，請確認 js/projects/toyota.js 已正確載入。");
   }
 
+  return global.ToyotaProject.calculate(project, request);
+}
   function getToyotaNominalRate(amount, term) {
     if (term >= 48) return 0.0399;
     if (term >= 36) return 0.0425;
