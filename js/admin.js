@@ -1,7 +1,9 @@
 /**
  * js/admin.js
- * 管理後台第二版
+ * 管理後台第三版
  * 功能：
+ * - Email/Password 登入
+ * - 檢查 Firestore admins/{uid}
  * - 啟用 / 停用專案
  * - 管理 TOYOTA 零利率子專案
  * - 儲存回 Firestore
@@ -11,37 +13,152 @@
   "use strict";
 
   const state = {
-    data: null
+    data: null,
+    user: null,
+    adminProfile: null
   };
 
   document.addEventListener("DOMContentLoaded", init);
 
-  async function init() {
-    renderLoading();
-
-    try {
-      state.data = await StorageService.loadProjectData();
-      renderAdmin();
-    } catch (err) {
-      renderError(err.message);
-      console.error(err);
+  function init() {
+    if (!window.FirebaseApp || !FirebaseApp.auth || !FirebaseApp.db) {
+      renderError("Firebase 尚未正確初始化，請確認 firebase.js 與 Firebase SDK 載入順序。");
+      return;
     }
+
+    renderLoading("確認登入狀態中...");
+
+    FirebaseApp.auth.onAuthStateChanged(async user => {
+      try {
+        if (!user) {
+          state.user = null;
+          state.adminProfile = null;
+          renderLogin();
+          return;
+        }
+
+        state.user = user;
+
+        const adminDoc = await FirebaseApp.db
+          .collection("admins")
+          .doc(user.uid)
+          .get();
+
+        if (!adminDoc.exists || adminDoc.data().enabled !== true) {
+          renderNoPermission(user.email);
+          return;
+        }
+
+        state.adminProfile = adminDoc.data();
+        state.data = await StorageService.loadProjectData();
+
+        renderAdmin();
+
+      } catch (err) {
+        renderError(err.message);
+        console.error(err);
+      }
+    });
   }
 
-  function renderLoading() {
+  function renderLoading(message = "資料載入中...") {
     document.getElementById("adminApp").innerHTML = `
       <div class="wrap">
         <h1 class="title">管理後台</h1>
         <div class="card">
-          <div class="empty">資料載入中...</div>
+          <div class="empty">${escapeHtml(message)}</div>
         </div>
       </div>
     `;
   }
 
+  function renderLogin() {
+    document.getElementById("adminApp").innerHTML = `
+      <div class="wrap">
+        <div class="login-card card">
+          <h1 class="title">管理後台登入</h1>
+          <p class="subtitle">請使用已授權的管理員帳號登入。</p>
+
+          <div id="notice" class="notice"></div>
+
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" autocomplete="username" placeholder="請輸入管理員 Email">
+          </div>
+
+          <div class="field">
+            <label for="loginPassword">密碼</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="請輸入密碼">
+          </div>
+
+          <div class="actions">
+            <button id="loginBtn" type="button">登入</button>
+            <a class="ghost-link" href="index.html">回前台</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("loginBtn").addEventListener("click", login);
+
+    document.getElementById("loginPassword").addEventListener("keydown", event => {
+      if (event.key === "Enter") login();
+    });
+  }
+
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password) {
+      showNotice("請輸入 Email 與密碼。");
+      return;
+    }
+
+    const btn = document.getElementById("loginBtn");
+
+    try {
+      btn.disabled = true;
+      btn.textContent = "登入中...";
+
+      await FirebaseApp.auth.signInWithEmailAndPassword(email, password);
+
+    } catch (err) {
+      showNotice("登入失敗：" + getAuthErrorMessage(err));
+      console.error(err);
+
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "登入";
+    }
+  }
+
+  async function logout() {
+    await FirebaseApp.auth.signOut();
+  }
+
+  function renderNoPermission(email) {
+    document.getElementById("adminApp").innerHTML = `
+      <div class="wrap">
+        <div class="card error-card">
+          <h1 class="title">沒有後台權限</h1>
+          <p>目前登入帳號：<strong>${escapeHtml(email || "")}</strong></p>
+          <p>此帳號尚未被加入 Firestore 的 <strong>admins</strong> 權限名單，或已被停用。</p>
+
+          <div class="actions">
+            <button id="logoutBtn" type="button">登出</button>
+            <a class="ghost-link" href="index.html">回前台</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+  }
+
   function renderAdmin() {
     const projects = state.data.projects || [];
-    const toyotaProject = getToyotaProject();
+    const adminName = state.adminProfile?.name || state.user?.email || "管理員";
 
     document.getElementById("adminApp").innerHTML = `
       <div class="wrap">
@@ -49,12 +166,14 @@
           <div>
             <h1 class="title">管理後台</h1>
             <p class="subtitle">
+              已登入：<strong>${escapeHtml(adminName)}</strong>。
               修改後按「儲存設定」，前台重新整理後會套用最新設定。
             </p>
           </div>
 
           <div class="admin-actions">
             <a class="ghost-link" href="index.html">回前台</a>
+            <button id="logoutBtn" type="button" class="ghost">登出</button>
             <button id="saveBtn" type="button">儲存設定</button>
           </div>
         </div>
@@ -94,7 +213,7 @@
           </div>
 
           <div class="toyota-plan-list">
-            ${(toyotaProject?.plans || []).map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
+            ${(getToyotaProject()?.plans || []).map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
           </div>
         </div>
 
@@ -105,7 +224,7 @@
       </div>
     `;
 
-    bindEvents();
+    bindAdminEvents();
     updateJsonPreview();
   }
 
@@ -182,7 +301,7 @@
     `;
   }
 
-  function bindEvents() {
+  function bindAdminEvents() {
     document.querySelectorAll(".project-enabled").forEach(input => {
       input.addEventListener("change", handleEnabledChange);
     });
@@ -205,6 +324,7 @@
 
     document.getElementById("addToyotaPlanBtn").addEventListener("click", addToyotaPlan);
     document.getElementById("saveBtn").addEventListener("click", save);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
   }
 
   function handleEnabledChange(event) {
@@ -222,18 +342,17 @@
 
     if (event.target.classList.contains("toyota-plan-name")) {
       plan.name = event.target.value.trim();
-      plan.id = generateToyotaPlanId(plan.name, plan.subsidyAmount, plan.subsidyTerm);
     }
 
     if (event.target.classList.contains("toyota-plan-amount")) {
       plan.subsidyAmount = Number(event.target.value);
-      plan.id = generateToyotaPlanId(plan.name, plan.subsidyAmount, plan.subsidyTerm);
     }
 
     if (event.target.classList.contains("toyota-plan-term")) {
       plan.subsidyTerm = Number(event.target.value);
-      plan.id = generateToyotaPlanId(plan.name, plan.subsidyAmount, plan.subsidyTerm);
     }
+
+    plan.id = generateToyotaPlanId(plan.name, plan.subsidyAmount, plan.subsidyTerm);
 
     updateJsonPreview();
   }
@@ -289,7 +408,6 @@
     if (!toyotaProject || !Array.isArray(toyotaProject.plans)) return;
 
     const plan = toyotaProject.plans[index];
-
     const ok = confirm(`確定要刪除「${plan.name}」嗎？`);
     if (!ok) return;
 
@@ -342,7 +460,7 @@
   }
 
   function getToyotaProject() {
-    return (state.data.projects || []).find(project => project.type === "toyota_zero_interest");
+    return (state.data?.projects || []).find(project => project.type === "toyota_zero_interest");
   }
 
   function generateToyotaPlanId(name, amount, term) {
@@ -355,12 +473,12 @@
   function updateJsonPreview() {
     const box = document.getElementById("jsonPreview");
     if (!box) return;
-
     box.textContent = JSON.stringify(state.data, null, 2);
   }
 
   function showNotice(message) {
     const notice = document.getElementById("notice");
+    if (!notice) return;
     notice.textContent = message;
     notice.style.display = "block";
   }
@@ -375,6 +493,18 @@
         </div>
       </div>
     `;
+  }
+
+  function getAuthErrorMessage(err) {
+    const code = err?.code || "";
+
+    if (code === "auth/invalid-email") return "Email 格式不正確。";
+    if (code === "auth/user-not-found") return "找不到此帳號。";
+    if (code === "auth/wrong-password") return "密碼錯誤。";
+    if (code === "auth/invalid-credential") return "帳號或密碼錯誤。";
+    if (code === "auth/too-many-requests") return "嘗試次數過多，請稍後再試。";
+
+    return err?.message || "未知錯誤";
   }
 
   function escapeHtml(text) {
