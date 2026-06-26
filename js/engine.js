@@ -248,7 +248,7 @@
         { key: "monthlyPayment", label: "月付款", type: "money" },
         { key: "dlrBurden", label: "DLR負擔", type: "money" },
         { key: "maxMonthlyPayment", label: "最大月付款", type: "money" },
-        { key: "customerRate", label: "客戶利率", type: "ratePercent" },
+        { key: "customerRate", label: "客戶利率", type: "ratePercent3" },
         { key: "minDlrSubsidy", label: "最小DLR補貼", type: "money" }
       ];
     }

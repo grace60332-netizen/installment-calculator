@@ -167,6 +167,7 @@
     if (type === "money") return formatMoney(value);
     if (type === "integer") return Math.round(Number(value)).toLocaleString("zh-TW");
     if (type === "ratePercent") return Number(value).toFixed(2) + "%";
+    if (type === "ratePercent3") return Number(value).toFixed(3) + "%";
 
     return escapeHtml(String(value));
   }
