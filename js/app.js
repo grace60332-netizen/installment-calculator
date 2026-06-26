@@ -18,10 +18,7 @@
 
   async function init() {
     try {
-      const res = await fetch(DATA_PATH, { cache: "no-store" });
-      if (!res.ok) throw new Error(`讀取 ${DATA_PATH} 失敗`);
-
-      state.data = await res.json();
+      state.data = await StorageService.loadProjectData();
       state.projects = (state.data.projects || []).filter(p => p.enabled !== false);
 
       UI.renderApp(document.getElementById("app"), state.data, state.projects);
