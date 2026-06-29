@@ -11,8 +11,13 @@
       <div class="wrap">
         <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
         <p class="subtitle">
-          請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
+        請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
         </p>
+
+        <div class="actions" style="margin-bottom: 18px;">
+          <a class="ghost-link" href="car-loan.html">車貸補貼息試算</a>
+          <a class="ghost-link" href="admin.html">管理後台</a>
+        </div>
 
         <div class="card">
           <div class="grid">

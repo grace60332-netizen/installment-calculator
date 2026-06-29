@@ -241,3 +241,18 @@ tbody tr:hover {
     min-width: 760px;
   }
 }
+.ghost-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.ghost-link:hover {
+  background: #d1d5db;
+}

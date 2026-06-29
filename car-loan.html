@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>車貸補貼息試算｜分期試算工具</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/car-loan.css">
+</head>
+
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">分期試算工具</div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html">專案試算</a>
+      <a href="car-loan.html" class="active">車貸補貼息試算</a>
+      <a href="admin.html">管理後台</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="wrap">
+      <h1 class="title">車貸補貼息試算</h1>
+      <p class="subtitle">
+        輸入申貸金額、客戶利率、實質利率與攤還期數，系統會計算月付金額、補貼息與實撥金額。
+      </p>
+
+      <div class="card">
+        <div class="grid">
+          <div class="field">
+            <label for="loanAmount">申貸金額（元）</label>
+            <input id="loanAmount" type="number" value="1000000">
+          </div>
+
+          <div class="field">
+            <label for="customerRate">客戶利率（%）</label>
+            <input id="customerRate" type="number" step="0.01" value="0">
+          </div>
+
+          <div class="field">
+            <label for="realRate">實質利率（%）</label>
+            <input id="realRate" type="number" step="0.01" value="5">
+          </div>
+
+          <div class="field">
+            <label for="term">攤還期數（期）</label>
+            <input id="term" type="number" value="60">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="calculateBtn" type="button">試算</button>
+          <button id="clearBtn" type="button" class="ghost">清除</button>
+        </div>
+
+        <div id="notice" class="notice"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">試算結果如下</h2>
+
+        <div id="resultBox" class="car-result">
+          <div class="empty">請輸入資料後試算。</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/finance.js"></script>
+<script src="js/carLoan.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    calculateBtn.addEventListener("click", calculate);
+    clearBtn.addEventListener("click", clearForm);
+
+    ["loanAmount", "customerRate", "realRate", "term"].forEach(id => {
+      document.getElementById(id).addEventListener("input", calculate);
+    });
+
+    calculate();
+  });
+
+  function calculate() {
+    const notice = document.getElementById("notice");
+    const resultBox = document.getElementById("resultBox");
+
+    notice.textContent = "";
+    notice.style.display = "none";
+
+    try {
+      const result = CarLoanCalculator.calculateCarLoan({
+        loanAmount: document.getElementById("loanAmount").value,
+        customerRate: document.getElementById("customerRate").value,
+        realRate: document.getElementById("realRate").value,
+        term: document.getElementById("term").value
+      });
+
+      resultBox.innerHTML = `
+        <div class="result-row">
+          <span>月付金額</span>
+          <strong>${CarLoanCalculator.formatMoney(result.monthlyPayment)}</strong>
+        </div>
+
+        <div class="result-row">
+          <span>補貼息</span>
+          <strong>${CarLoanCalculator.formatMoney(result.subsidy)}</strong>
+        </div>
+
+        <div class="result-row">
+          <span>實撥金額</span>
+          <strong>${CarLoanCalculator.formatMoney(result.actualDisbursement)}</strong>
+        </div>
+      `;
+
+    } catch (err) {
+      notice.textContent = err.message;
+      notice.style.display = "block";
+
+      resultBox.innerHTML = `
+        <div class="empty">請確認輸入資料。</div>
+      `;
+    }
+  }
+
+  function clearForm() {
+    document.getElementById("loanAmount").value = "";
+    document.getElementById("customerRate").value = "";
+    document.getElementById("realRate").value = "";
+    document.getElementById("term").value = "";
+
+    document.getElementById("resultBox").innerHTML = `
+      <div class="empty">請輸入資料後試算。</div>
+    `;
+  }
+</script>
+
+</body>
+</html>
