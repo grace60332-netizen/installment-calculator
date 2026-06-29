@@ -3,7 +3,7 @@
  * 管理後台第三版
  * 功能：
  * - Email/Password 登入
- * - 檢查 Firestore admins/{uid}
+ * - 檢查 Firestore admin/{uid}
  * - 啟用 / 停用專案
  * - 管理 TOYOTA 零利率子專案
  * - 儲存回 Firestore
@@ -40,7 +40,7 @@
         state.user = user;
 
         const adminDoc = await FirebaseApp.db
-          .collection("admins")
+          .collection("admin")
           .doc(user.uid)
           .get();
 
@@ -143,7 +143,7 @@
         <div class="card error-card">
           <h1 class="title">沒有後台權限</h1>
           <p>目前登入帳號：<strong>${escapeHtml(email || "")}</strong></p>
-          <p>此帳號尚未被加入 Firestore 的 <strong>admins</strong> 權限名單，或已被停用。</p>
+          <p>此帳號尚未被加入 Firestore 的 <strong>admin</strong> 權限名單，或已被停用。</p>
 
           <div class="actions">
             <button id="logoutBtn" type="button">登出</button>
