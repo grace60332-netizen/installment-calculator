@@ -6,51 +6,60 @@
 (function (global) {
   "use strict";
 
-  function renderApp(root, data, projects) {
-    root.innerHTML = `
-      <div class="wrap">
-        <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
-        <p class="subtitle">
-        請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
-        </p>
+function renderApp(root, data, projects) {
+  root.innerHTML = `
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-title">分期試算工具</div>
 
-        <div class="actions" style="margin-bottom: 18px;">
-          <a class="ghost-link" href="car-loan.html">車貸補貼息試算</a>
-          <a class="ghost-link" href="admin.html">管理後台</a>
-        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="active">專案試算</a>
+          <a href="car-loan.html">車貸補貼息試算</a>
+          <a href="admin.html">管理後台</a>
+        </nav>
+      </aside>
 
-        <div class="card">
-          <div class="grid">
-            <div class="field">
-              <label for="projectSelect">選擇專案</label>
-              <select id="projectSelect">
-                ${projects.map(p => `
-                  <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>
-                `).join("")}
-              </select>
-              <small id="projectHint"></small>
+      <main class="main-content">
+        <div class="wrap">
+          <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
+          <p class="subtitle">
+            請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
+          </p>
+
+          <div class="card">
+            <div class="grid">
+              <div class="field">
+                <label for="projectSelect">選擇專案</label>
+                <select id="projectSelect">
+                  ${projects.map(p => `
+                    <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>
+                  `).join("")}
+                </select>
+                <small id="projectHint"></small>
+              </div>
+
+              <div id="dynamicFields" class="full-span"></div>
             </div>
 
-            <div id="dynamicFields" class="full-span"></div>
+            <div class="actions">
+              <button id="calcBtn" type="button">立即試算</button>
+              <button id="resetBtn" type="button" class="ghost">重設</button>
+            </div>
+
+            <div id="notice" class="notice"></div>
+            <div id="summary" class="meta"></div>
           </div>
 
-          <div class="actions">
-            <button id="calcBtn" type="button">立即試算</button>
-            <button id="resetBtn" type="button" class="ghost">重設</button>
-          </div>
-
-          <div id="notice" class="notice"></div>
-          <div id="summary" class="meta"></div>
-        </div>
-
-        <div class="card">
-          <div id="resultArea" class="table-wrap">
-            <div class="empty">請先輸入資料。</div>
+          <div class="card">
+            <div id="resultArea" class="table-wrap">
+              <div class="empty">請先輸入資料。</div>
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  }
+      </main>
+    </div>
+  `;
+}
 
   function renderDynamicFields(project, data) {
     const box = document.getElementById("dynamicFields");

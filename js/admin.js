@@ -134,66 +134,79 @@
     const toyotaProject = getToyotaProject();
 
     document.getElementById("adminApp").innerHTML = `
-      <div class="wrap">
-        <div class="admin-header">
-          <div>
-            <h1 class="title">管理後台</h1>
-            <p class="subtitle">
-              已登入：<strong>${escapeHtml(state.adminProfile?.name || state.user?.email || "")}</strong><br>
-              修改後按「儲存設定」，前台重新整理後會套用最新設定。
-            </p>
-          </div>
+      <div class="app-layout">
+        <aside class="sidebar">
+          <div class="sidebar-title">分期試算工具</div>
 
-          <div class="admin-actions">
-            <a class="ghost-link" href="index.html">回前台</a>
-            <button id="logoutBtn" type="button" class="ghost">登出</button>
-            <button id="saveBtn" type="button">儲存設定</button>
-          </div>
-        </div>
+          <nav class="sidebar-nav">
+            <a href="index.html">專案試算</a>
+            <a href="car-loan.html">車貸補貼息試算</a>
+            <a href="admin.html" class="active">管理後台</a>
+          </nav>
+        </aside>
 
-        <div id="notice" class="notice"></div>
+        <main class="main-content">
+          <div class="wrap">
+            <div class="admin-header">
+              <div>
+                <h1 class="title">管理後台</h1>
+                <p class="subtitle">
+                  已登入：<strong>${escapeHtml(state.adminProfile?.name || state.user?.email || "")}</strong><br>
+                  修改後按「儲存設定」，前台重新整理後會套用最新設定。
+                </p>
+              </div>
 
-        <div class="card">
-          <h2 class="section-title">專案啟用狀態</h2>
-          <div class="admin-project-list">
-            ${projects.map((project, index) => renderProjectRow(project, index)).join("")}
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 class="section-title">TOYOTA 零利率子專案管理</h2>
-
-          <div class="toyota-add-box">
-            <div class="field">
-              <label for="newToyotaName">專案名稱</label>
-              <input id="newToyotaName" type="text" placeholder="例如：120萬36期">
+              <div class="admin-actions">
+                <button id="logoutBtn" type="button" class="ghost">登出</button>
+                <button id="saveBtn" type="button">儲存設定</button>
+              </div>
             </div>
 
-            <div class="field">
-              <label for="newToyotaAmount">補貼金額</label>
-              <input id="newToyotaAmount" type="number" placeholder="例如：1200000">
-              <small>請輸入元，不是萬。</small>
+            <div id="notice" class="notice"></div>
+
+            <div class="card">
+              <h2 class="section-title">專案啟用狀態</h2>
+              <div class="admin-project-list">
+                ${projects.map((project, index) => renderProjectRow(project, index)).join("")}
+              </div>
             </div>
 
-            <div class="field">
-              <label for="newToyotaTerm">補貼期數</label>
-              <input id="newToyotaTerm" type="number" placeholder="例如：36">
+            <div class="card">
+              <h2 class="section-title">TOYOTA 零利率子專案管理</h2>
+
+              <div class="toyota-add-box">
+                <div class="field">
+                  <label for="newToyotaName">專案名稱</label>
+                  <input id="newToyotaName" type="text" placeholder="例如：120萬36期">
+                </div>
+
+                <div class="field">
+                  <label for="newToyotaAmount">補貼金額</label>
+                  <input id="newToyotaAmount" type="number" placeholder="例如：1200000">
+                  <small>請輸入元，不是萬。</small>
+                </div>
+
+                <div class="field">
+                  <label for="newToyotaTerm">補貼期數</label>
+                  <input id="newToyotaTerm" type="number" placeholder="例如：36">
+                </div>
+
+                <div class="field add-button-field">
+                  <button id="addToyotaPlanBtn" type="button">新增 TOYOTA 子專案</button>
+                </div>
+              </div>
+
+              <div class="toyota-plan-list">
+                ${(toyotaProject?.plans || []).map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
+              </div>
             </div>
 
-            <div class="field add-button-field">
-              <button id="addToyotaPlanBtn" type="button">新增 TOYOTA 子專案</button>
+            <div class="card">
+              <h2 class="section-title">目前 JSON 預覽</h2>
+              <pre id="jsonPreview" class="json-preview"></pre>
             </div>
           </div>
-
-          <div class="toyota-plan-list">
-            ${(toyotaProject?.plans || []).map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 class="section-title">目前 JSON 預覽</h2>
-          <pre id="jsonPreview" class="json-preview"></pre>
-        </div>
+        </main>
       </div>
     `;
 
