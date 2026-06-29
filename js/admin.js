@@ -181,13 +181,13 @@
                 </div>
 
                 <div class="field">
-                  <label for="newToyotaAmount">補貼金額</label>
+                  <label for="newToyotaAmount">金額</label>
                   <input id="newToyotaAmount" type="number" placeholder="例如：1200000">
                   <small>請輸入元，不是萬。</small>
                 </div>
 
                 <div class="field">
-                  <label for="newToyotaTerm">補貼期數</label>
+                  <label for="newToyotaTerm">期數</label>
                   <input id="newToyotaTerm" type="number" placeholder="例如：36">
                 </div>
 
@@ -245,12 +245,12 @@
         </div>
 
         <div class="field">
-          <label>補貼金額</label>
+          <label>金額</label>
           <input type="number" class="toyota-plan-amount" data-index="${index}" value="${Number(plan.subsidyAmount)}">
         </div>
 
         <div class="field">
-          <label>補貼期數</label>
+          <label>期數</label>
           <input type="number" class="toyota-plan-term" data-index="${index}" value="${Number(plan.subsidyTerm)}">
         </div>
 
