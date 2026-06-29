@@ -152,3 +152,34 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.login-card .field {
+  margin-bottom: 16px;
+}
+
+.login-actions {
+  margin-top: 8px;
+}
+
+.login-notice {
+  display: block;
+  margin-bottom: 16px;
+}
