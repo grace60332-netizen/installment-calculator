@@ -25,16 +25,25 @@
   async function getAdminProfile(uid) {
     const db = global.FirebaseApp.db;
 
+    console.log("目前登入 UID：", uid);
+    console.log("正在檢查 Firestore 路徑：admins/" + uid);
+
     const doc = await db
       .collection("admins")
       .doc(uid)
       .get();
 
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      console.warn("找不到 admins/" + uid);
+      return null;
+    }
+
+    const data = doc.data();
+    console.log("找到 admin profile：", data);
 
     return {
       id: doc.id,
-      ...doc.data()
+      ...data
     };
   }
 
@@ -48,10 +57,17 @@
 
     const profile = await getAdminProfile(user.uid);
 
-    if (!profile || profile.active !== true) {
+    if (!profile) {
       return {
         ok: false,
         reason: "not_admin"
+      };
+    }
+
+    if (profile.active !== true) {
+      return {
+        ok: false,
+        reason: "inactive_admin"
       };
     }
 
