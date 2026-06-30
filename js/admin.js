@@ -266,6 +266,8 @@
           <label>適用專案</label>
           <input
             type="text"
+            class="toyota-model-project"
+            data-index="${index}"
             value="${escapeAttr(projectName)}"
             disabled
           >
@@ -291,7 +293,7 @@
           >
         </div>
 
-        <div class="toyota-model-status">
+        <div class="toyota-model-status" data-index="${index}">
           ${isActive
             ? `<span class="status-pill active">啟用</span>`
             : `<span class="status-pill inactive">無適用專案</span>`
@@ -365,7 +367,33 @@
       model.subsidyTerm = Number(event.target.value);
     }
 
+    refreshToyotaModelRow(index);
     updateJsonPreview();
+  }
+  
+  function refreshToyotaModelRow(index) {
+    const toyotaProject = getToyotaProject();
+    const model = toyotaProject?.models?.[index];
+    if (!model) return;
+
+    const amount = Number(model.subsidyAmount || 0);
+    const term = Number(model.subsidyTerm || 0);
+    const isActive = amount > 0 && term > 0;
+
+    const projectName = isActive ? `${amount / 10000}萬/${term}期` : "-";
+
+    const projectInput = document.querySelector(`.toyota-model-project[data-index="${index}"]`);
+    const statusBox = document.querySelector(`.toyota-model-status[data-index="${index}"]`);
+
+    if (projectInput) {
+      projectInput.value = projectName;
+    }
+
+    if (statusBox) {
+      statusBox.innerHTML = isActive
+        ? `<span class="status-pill active">啟用</span>`
+        : `<span class="status-pill inactive">無適用專案</span>`;
+    }
   }
 
   function addToyotaModel() {
