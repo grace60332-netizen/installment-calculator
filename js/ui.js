@@ -199,6 +199,12 @@
       renderCompareResult(result);
       return;
     }
+    if (
+      ["toyota_zero_interest", "lexus_zero_interest", "toyota_low_interest_188"].includes(result.projectId)
+    ) {
+      renderSingleResultCard(result);
+      return;
+    }
 
     document.getElementById("resultArea").innerHTML = `
       <table>
@@ -245,6 +251,22 @@
             `).join("")}
           </tbody>
         </table>
+      </div>
+    `;
+  }
+  function renderSingleResultCard(result) {
+     const row = result.rows[0];
+
+    document.getElementById("resultArea").innerHTML = `
+      <div class="result-card-list">
+        <div class="result-card">
+          ${result.columns.map(col => `
+            <div class="result-card-row">
+              <div class="result-card-label">${escapeHtml(col.label)}</div>
+              <div class="result-card-value">${formatCell(row[col.key], col.type)}</div>
+            </div>
+          `).join("")}
+        </div>
       </div>
     `;
   }

@@ -397,3 +397,37 @@ tbody tr:hover {
     font-size: 15px;
   }
 }
+.result-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.result-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-card-row:last-child {
+  border-bottom: 0;
+}
+
+.result-card-label {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.result-card-value {
+  font-weight: 900;
+  text-align: right;
+}
