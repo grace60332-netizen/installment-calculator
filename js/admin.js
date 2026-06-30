@@ -1,6 +1,6 @@
 /**
  * js/admin.js
- * 管理後台：登入驗證 + 專案啟用停用 + TOYOTA車型管理
+ * 管理後台：登入驗證 + 專案啟用停用 + TOYOTA車型金額期數管理
  */
 
 (function () {
@@ -111,7 +111,6 @@
 
     try {
       state.data = await StorageService.loadProjectData();
-      normalizeToyotaData();
       renderAdmin();
     } catch (err) {
       renderError(err.message);
@@ -133,7 +132,10 @@
   function renderAdmin() {
     const projects = state.data.projects || [];
     const toyotaProject = getToyotaProject();
-    const toyotaModels = toyotaProject?.models || [];
+
+    if (toyotaProject && !Array.isArray(toyotaProject.models)) {
+      toyotaProject.models = [];
+    }
 
     document.getElementById("adminApp").innerHTML = `
       <div class="app-layout">
@@ -174,25 +176,27 @@
             </div>
 
             <div class="card">
-              <h2 class="section-title">TOYOTA 車型管理</h2>
+              <h2 class="section-title">TOYOTA 車型補助管理</h2>
               <p class="subtitle">
-                每個車型請直接填「補助款（萬）」與「補助期數」。系統會自動產生對應專案，前台使用者只需要選車型。
+                請直接在每個車型後方填寫補助金額與期數。若該車型本月不適用零利率，金額與期數填 0 即可。
               </p>
 
-              <div class="toyota-add-box">
+              <div class="toyota-model-add-box">
                 <div class="field">
-                  <label for="newToyotaModelName">車型名稱</label>
-                  <input id="newToyotaModelName" type="text" placeholder="例如：COROLLA CROSS 汽油">
+                  <label for="newToyotaModelName">新增車型名稱</label>
+                  <input id="newToyotaModelName" type="text" placeholder="例如：PRIUS PHEV">
                 </div>
 
                 <div class="field">
-                  <label for="newToyotaModelAmountWan">補助款（萬）</label>
-                  <input id="newToyotaModelAmountWan" type="number" step="0.1" placeholder="例如：70">
+                  <label for="newToyotaModelAmount">金額</label>
+                  <input id="newToyotaModelAmount" type="number" placeholder="例如：500000">
+                  <small>請輸入元，不是萬。不適用請填 0。</small>
                 </div>
 
                 <div class="field">
-                  <label for="newToyotaModelTerm">補助期數</label>
-                  <input id="newToyotaModelTerm" type="number" step="1" placeholder="例如：40">
+                  <label for="newToyotaModelTerm">期數</label>
+                  <input id="newToyotaModelTerm" type="number" placeholder="例如：50">
+                  <small>不適用請填 0。</small>
                 </div>
 
                 <div class="field add-button-field">
@@ -200,8 +204,8 @@
                 </div>
               </div>
 
-              <div class="toyota-plan-list">
-                ${toyotaModels.map((model, index) => renderToyotaModelRow(model, index)).join("")}
+              <div class="toyota-model-list">
+                ${(toyotaProject?.models || []).map((model, index) => renderToyotaModelRow(model, index)).join("")}
               </div>
             </div>
 
@@ -242,50 +246,45 @@
 
   function renderToyotaModelRow(model, index) {
     return `
-      <div class="toyota-plan-row">
+      <div class="toyota-model-row">
         <div class="field">
-          <label>車型名稱</label>
+          <label>車型</label>
           <input
             type="text"
             class="toyota-model-name"
             data-index="${index}"
-            value="${escapeAttr(model.name)}"
+            value="${escapeAttr(model.name || "")}"
           >
         </div>
 
         <div class="field">
-          <label>補助款（萬）</label>
+          <label>金額</label>
           <input
             type="number"
-            step="0.1"
-            class="toyota-model-amount-wan"
+            class="toyota-model-amount"
             data-index="${index}"
-            value="${formatAmountWanInput(model.subsidyAmount)}"
+            value="${Number(model.subsidyAmount || 0)}"
           >
         </div>
 
         <div class="field">
-          <label>補助期數</label>
+          <label>期數</label>
           <input
             type="number"
-            step="1"
             class="toyota-model-term"
             data-index="${index}"
             value="${Number(model.subsidyTerm || 0)}"
           >
         </div>
 
-        <label class="switch-row">
-          <input
-            type="checkbox"
-            class="toyota-model-enabled"
-            data-index="${index}"
-            ${model.enabled !== false ? "checked" : ""}
-          >
-          <span>啟用</span>
-        </label>
+        <div class="toyota-model-status">
+          ${Number(model.subsidyAmount) > 0 && Number(model.subsidyTerm) > 0
+            ? `<span class="status-pill active">適用</span>`
+            : `<span class="status-pill inactive">不適用</span>`
+          }
+        </div>
 
-        <div class="toyota-plan-actions">
+        <div class="toyota-model-actions">
           <button type="button" class="ghost delete-toyota-model" data-index="${index}">
             刪除
           </button>
@@ -303,16 +302,12 @@
       input.addEventListener("input", handleToyotaModelChange);
     });
 
-    document.querySelectorAll(".toyota-model-amount-wan").forEach(input => {
+    document.querySelectorAll(".toyota-model-amount").forEach(input => {
       input.addEventListener("input", handleToyotaModelChange);
     });
 
     document.querySelectorAll(".toyota-model-term").forEach(input => {
       input.addEventListener("input", handleToyotaModelChange);
-    });
-
-    document.querySelectorAll(".toyota-model-enabled").forEach(input => {
-      input.addEventListener("change", handleToyotaModelChange);
     });
 
     document.querySelectorAll(".delete-toyota-model").forEach(button => {
@@ -348,19 +343,14 @@
       model.id = generateToyotaModelId(model.name);
     }
 
-    if (event.target.classList.contains("toyota-model-amount-wan")) {
-      model.subsidyAmount = Number(event.target.value) * 10000;
+    if (event.target.classList.contains("toyota-model-amount")) {
+      model.subsidyAmount = Number(event.target.value);
     }
 
     if (event.target.classList.contains("toyota-model-term")) {
       model.subsidyTerm = Number(event.target.value);
     }
 
-    if (event.target.classList.contains("toyota-model-enabled")) {
-      model.enabled = event.target.checked;
-    }
-
-    syncModelPlan(model);
     updateJsonPreview();
   }
 
@@ -377,37 +367,33 @@
     }
 
     const name = document.getElementById("newToyotaModelName").value.trim();
-    const amountWan = Number(document.getElementById("newToyotaModelAmountWan").value);
-    const term = Number(document.getElementById("newToyotaModelTerm").value);
+    const amount = Number(document.getElementById("newToyotaModelAmount").value || 0);
+    const term = Number(document.getElementById("newToyotaModelTerm").value || 0);
 
     if (!name) {
       showNotice("請輸入車型名稱。");
       return;
     }
 
-    if (!Number.isFinite(amountWan) || amountWan <= 0) {
-      showNotice("請輸入正確的補助款（萬）。");
+    if (!Number.isFinite(amount) || amount < 0) {
+      showNotice("請輸入正確的金額。");
       return;
     }
 
-    if (!Number.isFinite(term) || term <= 0) {
-      showNotice("請輸入正確的補助期數。");
+    if (!Number.isFinite(term) || term < 0) {
+      showNotice("請輸入正確的期數。");
       return;
     }
 
-    const model = {
+    toyotaProject.models.push({
       id: generateToyotaModelId(name),
       name,
-      subsidyAmount: amountWan * 10000,
-      subsidyTerm: term,
-      enabled: true
-    };
-
-    syncModelPlan(model);
-    toyotaProject.models.push(model);
+      subsidyAmount: amount,
+      subsidyTerm: term
+    });
 
     renderAdmin();
-    showNotice("已新增 TOYOTA 車型，記得按「儲存設定」。");
+    showNotice("已新增車型，記得按「儲存設定」。");
   }
 
   function deleteToyotaModel(event) {
@@ -424,7 +410,7 @@
     toyotaProject.models.splice(index, 1);
 
     renderAdmin();
-    showNotice("已刪除 TOYOTA 車型，記得按「儲存設定」。");
+    showNotice("已刪除車型，記得按「儲存設定」。");
   }
 
   async function save() {
@@ -450,135 +436,28 @@
     }
   }
 
-  function normalizeToyotaData() {
-    const toyotaProject = getToyotaProject();
-    if (!toyotaProject) return;
-
-    if (!Array.isArray(toyotaProject.plans)) {
-      toyotaProject.plans = [];
-    }
-
-    if (!Array.isArray(toyotaProject.models)) {
-      toyotaProject.models = [];
-    }
-
-    toyotaProject.models = toyotaProject.models.map(model => {
-      const plan = toyotaProject.plans.find(item => item.id === model.planId);
-
-      const normalized = {
-        ...model,
-        subsidyAmount: Number(model.subsidyAmount || plan?.subsidyAmount || 0),
-        subsidyTerm: Number(model.subsidyTerm || plan?.subsidyTerm || 0),
-        enabled: model.enabled !== false
-      };
-
-      syncModelPlan(normalized);
-      return normalized;
-    });
-  }
-
   function cleanDataBeforeSave() {
     const toyotaProject = getToyotaProject();
 
     if (!toyotaProject) return;
 
-    if (!Array.isArray(toyotaProject.models)) {
-      toyotaProject.models = [];
-    }
+    delete toyotaProject.plans;
+    delete toyotaProject.planSelectorLabel;
 
-    toyotaProject.models = toyotaProject.models
-      .filter(model => model.name)
-      .map(model => {
-        const cleaned = {
+    if (Array.isArray(toyotaProject.models)) {
+      toyotaProject.models = toyotaProject.models
+        .filter(model => model.name)
+        .map(model => ({
           id: generateToyotaModelId(model.name),
           name: String(model.name).trim(),
-          subsidyAmount: Number(model.subsidyAmount),
-          subsidyTerm: Number(model.subsidyTerm),
-          enabled: model.enabled !== false
-        };
-
-        if (
-          Number.isFinite(cleaned.subsidyAmount) &&
-          cleaned.subsidyAmount > 0 &&
-          Number.isFinite(cleaned.subsidyTerm) &&
-          cleaned.subsidyTerm > 0
-        ) {
-          cleaned.planId = generateToyotaPlanId(cleaned.subsidyAmount, cleaned.subsidyTerm);
-        } else {
-          cleaned.planId = null;
-        }
-
-        return cleaned;
-      });
-
-    rebuildToyotaPlansFromModels(toyotaProject);
-  }
-
-  function syncModelPlan(model) {
-    const toyotaProject = getToyotaProject();
-    if (!toyotaProject) return;
-
-    const amount = Number(model.subsidyAmount);
-    const term = Number(model.subsidyTerm);
-
-    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(term) || term <= 0) {
-      model.planId = null;
-      return;
+          subsidyAmount: Number(model.subsidyAmount || 0),
+          subsidyTerm: Number(model.subsidyTerm || 0)
+        }));
     }
-
-    const planId = generateToyotaPlanId(amount, term);
-    model.planId = planId;
-
-    if (!Array.isArray(toyotaProject.plans)) {
-      toyotaProject.plans = [];
-    }
-
-    const existed = toyotaProject.plans.find(plan => plan.id === planId);
-
-    if (!existed) {
-      toyotaProject.plans.push({
-        id: planId,
-        name: generateToyotaPlanName(amount, term),
-        subsidyAmount: amount,
-        subsidyTerm: term
-      });
-    }
-  }
-
-  function rebuildToyotaPlansFromModels(toyotaProject) {
-    const planMap = new Map();
-
-    (toyotaProject.models || []).forEach(model => {
-      if (!model.planId) return;
-
-      planMap.set(model.planId, {
-        id: model.planId,
-        name: generateToyotaPlanName(model.subsidyAmount, model.subsidyTerm),
-        subsidyAmount: Number(model.subsidyAmount),
-        subsidyTerm: Number(model.subsidyTerm)
-      });
-    });
-
-    toyotaProject.plans = Array.from(planMap.values()).sort((a, b) => {
-      if (a.subsidyAmount !== b.subsidyAmount) return a.subsidyAmount - b.subsidyAmount;
-      return a.subsidyTerm - b.subsidyTerm;
-    });
   }
 
   function getToyotaProject() {
     return (state.data.projects || []).find(project => project.type === "toyota_zero_interest");
-  }
-
-  function generateToyotaPlanId(amount, term) {
-    const amountWan = Number(amount) / 10000;
-    const safeAmount = String(amountWan).replace(".", "_");
-    const safeTerm = String(term);
-    return `p${safeAmount}_${safeTerm}`;
-  }
-
-  function generateToyotaPlanName(amount, term) {
-    const amountWan = Number(amount) / 10000;
-    return `${formatWanPlain(amountWan)}萬${Number(term)}期`;
   }
 
   function generateToyotaModelId(name) {
@@ -589,19 +468,6 @@
       .replaceAll("/", "_")
       .replaceAll("-", "_")
       .replace(/[^\w\u4e00-\u9fa5]/g, "");
-  }
-
-  function formatAmountWanInput(amount) {
-    const wan = Number(amount) / 10000;
-    if (!Number.isFinite(wan) || wan === 0) return "";
-    return formatWanPlain(wan);
-  }
-
-  function formatWanPlain(value) {
-    return Number(value).toLocaleString("zh-TW", {
-      maximumFractionDigits: 1,
-      useGrouping: false
-    });
   }
 
   function updateJsonPreview() {
@@ -635,6 +501,10 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function escapeAttr(text) {
+    return escapeHtml(text);
   }
 
 })();

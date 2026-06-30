@@ -66,40 +66,32 @@
     const hint = document.getElementById("projectHint");
 
     if (project.type === "toyota_zero_interest") {
-      hint.textContent = "請先選擇車型，系統會自動帶出適用的零利率專案，避免選錯。";
+      hint.textContent = "請選擇車型，系統會自動帶出該車型目前設定的補助金額與期數。";
 
-      const enabledModels = (project.models || []).filter(model => model.enabled !== false);
-      const plans = project.plans || [];
-
-      if (!enabledModels.length) {
-        box.innerHTML = `
-          <div class="empty full-span">
-            目前尚未設定可用車型。請至管理後台新增或啟用 TOYOTA 車型。
-          </div>
-        `;
-        return;
-      }
+      const models = project.models || [];
 
       box.innerHTML = `
         <div class="dynamic-grid full-span">
           <div class="field full-span">
             <label for="toyotaModel">車型</label>
             <select id="toyotaModel">
-              ${enabledModels.map(model => `
+              ${models.map(model => `
                 <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
               `).join("")}
             </select>
-            <small>每個車型會自動對應目前設定的零利率條件。</small>
+            <small>後台可調整每個車型對應的補助金額與期數。</small>
           </div>
 
-          <div class="field full-span">
-            <label for="toyotaPlan">適用專案</label>
-            <select id="toyotaPlan" disabled>
-              ${plans.map(plan => `
-                <option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</option>
-              `).join("")}
-            </select>
-            <small id="toyotaPlanHint">此欄位由車型自動帶入，不需手動選擇。</small>
+          <div class="field">
+            <label>目前設定補助金額</label>
+            <input id="toyotaSubsidyAmountDisplay" type="text" disabled>
+            <small>此欄位由車型自動帶入。</small>
+          </div>
+
+          <div class="field">
+            <label>目前設定補助期數</label>
+            <input id="toyotaSubsidyTermDisplay" type="text" disabled>
+            <small>此欄位由車型自動帶入。</small>
           </div>
 
           <div class="field">
@@ -115,7 +107,7 @@
         </div>
       `;
 
-      syncToyotaPlanFromModel(project);
+      syncToyotaModelInfo(project);
       return;
     }
 
@@ -137,28 +129,38 @@
     `;
   }
 
-  function syncToyotaPlanFromModel(project) {
+  function syncToyotaModelInfo(project) {
     const modelSelect = document.getElementById("toyotaModel");
-    const planSelect = document.getElementById("toyotaPlan");
-    const hint = document.getElementById("toyotaPlanHint");
+    const amountDisplay = document.getElementById("toyotaSubsidyAmountDisplay");
+    const termDisplay = document.getElementById("toyotaSubsidyTermDisplay");
 
-    if (!modelSelect || !planSelect) return null;
+    if (!modelSelect) return;
 
     const model = (project.models || []).find(item => item.id === modelSelect.value);
-    const plan = (project.plans || []).find(item => item.id === model?.planId);
 
-    if (plan) {
-      planSelect.value = plan.id;
-      if (hint) hint.textContent = `目前車型適用：${plan.name}`;
-      return plan.id;
+    if (!model) {
+      if (amountDisplay) amountDisplay.value = "";
+      if (termDisplay) termDisplay.value = "";
+      return;
     }
 
-    planSelect.value = "";
-    if (hint) hint.textContent = "此車型目前未設定適用零利率專案。";
-    return null;
+    const amount = Number(model.subsidyAmount);
+    const term = Number(model.subsidyTerm);
+
+    if (amountDisplay) {
+      amountDisplay.value = Number.isFinite(amount) && amount > 0
+        ? `${formatMoney(amount)}`
+        : "不適用";
+    }
+
+    if (termDisplay) {
+      termDisplay.value = Number.isFinite(term) && term > 0
+        ? `${term} 期`
+        : "不適用";
+    }
   }
 
-  function renderSummary(project, loanWan, term, planId) {
+  function renderSummary(project, loanWan, term, modelId) {
     const summary = document.getElementById("summary");
     const loanAmount = Math.round(Number(loanWan) * 10000);
 
@@ -169,13 +171,17 @@
     `;
 
     if (project.type === "toyota_zero_interest") {
-      const modelId = document.getElementById("toyotaModel")?.value;
       const model = (project.models || []).find(p => p.id === modelId);
-      const plan = (project.plans || []).find(p => p.id === planId);
+      const subsidyAmount = Number(model?.subsidyAmount);
+      const subsidyTerm = Number(model?.subsidyTerm);
 
       html += `
         <div>車型：<strong>${escapeHtml(model?.name || "")}</strong></div>
-        <div>適用專案：<strong>${escapeHtml(plan?.name || "")}</strong></div>
+        <div>補助設定：<strong>${
+          Number.isFinite(subsidyAmount) && subsidyAmount > 0 && Number.isFinite(subsidyTerm) && subsidyTerm > 0
+            ? `${formatMoney(subsidyAmount)} / ${subsidyTerm} 期`
+            : "不適用"
+        }</strong></div>
         <div>客戶期數：<strong>${term}</strong> 期</div>
       `;
     }
@@ -263,7 +269,7 @@
     renderEmpty,
     showNotice,
     clearNotice,
-    syncToyotaPlanFromModel
+    syncToyotaModelInfo
   };
 
 })(typeof window !== "undefined" ? window : globalThis);

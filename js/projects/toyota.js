@@ -1,9 +1,9 @@
 /**
  * js/projects/toyota.js
  * TOYOTA 零利率專案公式
- * 依照公式表：
- * - 彙總(新專案更新此處)
- * - 計算結果
+ * 新版：
+ * - 前台只選車型
+ * - 每個車型直接設定 subsidyAmount / subsidyTerm
  */
 
 (function (global) {
@@ -18,21 +18,32 @@
   function calculate(project, request) {
     const loan = toLoanAmount(request);
     const term = Number(request.term);
-    const planId = request.planId;
+    const modelId = request.modelId;
 
-    const plan = (project.plans || []).find(p => p.id === planId) || project.plans?.[0];
+    const model = (project.models || []).find(item => item.id === modelId);
 
-    if (!plan) throw new Error("找不到 TOYOTA 適用專案。");
+    if (!model) throw new Error("請選擇車型。");
     if (!Number.isFinite(loan)) throw new Error("TOYOTA：貸款金額格式錯誤。");
     if (!Number.isFinite(term) || term <= 0) throw new Error("TOYOTA：期數格式錯誤。");
 
-    const planMeta = calculatePlanMeta(plan);
+    const subsidyAmount = Number(model.subsidyAmount);
+    const subsidyTerm = Number(model.subsidyTerm);
+
+    if (!Number.isFinite(subsidyAmount) || subsidyAmount <= 0 || !Number.isFinite(subsidyTerm) || subsidyTerm <= 0) {
+      throw new Error("此車型目前未設定零利率專案。");
+    }
+
+    const planMeta = calculatePlanMeta({
+      subsidyAmount,
+      subsidyTerm
+    });
+
     const result = calculateResultByLoanAndTerm(loan, term, planMeta);
 
     return {
       projectId: project.id,
       projectName: project.name,
-      selectedPlan: plan,
+      selectedModel: model,
       planMeta,
       columns: [
         { key: "loanAmount", label: "貸款金額", type: "money" },

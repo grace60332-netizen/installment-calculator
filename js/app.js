@@ -61,7 +61,7 @@
 
     if (toyotaModel) {
       toyotaModel.addEventListener("change", () => {
-        UI.syncToyotaPlanFromModel(state.currentProject);
+        UI.syncToyotaModelInfo(state.currentProject);
         calculate();
       });
     }
@@ -76,35 +76,11 @@
 
       const loanWan = Number(document.getElementById("loanWan")?.value);
       const term = Number(document.getElementById("loanTerm")?.value);
-      let planId = document.getElementById("toyotaPlan")?.value || null;
+      let modelId = null;
 
       if (!Number.isFinite(loanWan)) {
         UI.renderEmpty("請輸入貸款金額。");
         return;
-      }
-
-      if (project.type === "toyota_zero_interest") {
-        const modelId = document.getElementById("toyotaModel")?.value || null;
-        const model = (project.models || []).find(item => item.id === modelId);
-
-        if (!model) {
-          UI.renderEmpty("請選擇車型。");
-          return;
-        }
-
-        if (!model.planId) {
-          UI.showNotice("此車型目前未設定適用零利率專案。");
-          UI.renderEmpty("此車型目前未設定適用零利率專案。");
-          return;
-        }
-
-        planId = model.planId;
-        document.getElementById("toyotaPlan").value = planId;
-
-        if (!Number.isFinite(term) || term <= 0) {
-          UI.renderEmpty("請輸入期數。");
-          return;
-        }
       }
 
       if (project.type !== "toyota_zero_interest") {
@@ -118,14 +94,37 @@
         }
       }
 
+      if (project.type === "toyota_zero_interest") {
+        modelId = document.getElementById("toyotaModel")?.value || null;
+        const model = (project.models || []).find(item => item.id === modelId);
+
+        if (!model) {
+          UI.renderEmpty("請選擇車型。");
+          return;
+        }
+
+        if (!Number.isFinite(Number(model.subsidyAmount)) || Number(model.subsidyAmount) <= 0 ||
+            !Number.isFinite(Number(model.subsidyTerm)) || Number(model.subsidyTerm) <= 0) {
+          UI.showNotice("此車型目前未設定零利率專案。");
+          UI.renderEmpty("此車型目前未設定零利率專案。");
+          UI.renderSummary(project, loanWan, term, modelId);
+          return;
+        }
+
+        if (!Number.isFinite(term) || term <= 0) {
+          UI.renderEmpty("請輸入期數。");
+          return;
+        }
+      }
+
       const result = LoanEngine.calculate(project, {
         projectId: project.id,
         loanWan,
         term,
-        planId
+        modelId
       });
 
-      UI.renderSummary(project, loanWan, term, planId);
+      UI.renderSummary(project, loanWan, term, modelId);
       UI.renderResult(result);
 
     } catch (err) {
@@ -139,8 +138,7 @@
     const project = state.currentProject;
     if (!project) return;
 
-    const loanWan = document.getElementById("loanWan");
-    if (loanWan) loanWan.value = 100;
+    document.getElementById("loanWan").value = 100;
 
     if (project.type === "toyota_zero_interest") {
       const term = document.getElementById("loanTerm");
@@ -149,7 +147,7 @@
       if (term) term.value = 30;
       if (model) model.selectedIndex = 0;
 
-      UI.syncToyotaPlanFromModel(project);
+      UI.syncToyotaModelInfo(project);
     }
 
     calculate();

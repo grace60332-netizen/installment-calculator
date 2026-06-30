@@ -87,28 +87,9 @@ button:disabled {
   transform: none;
 }
 
-@media (max-width: 760px) {
-  .admin-header {
-    flex-direction: column;
-  }
-
-  .admin-actions {
-    width: 100%;
-  }
-
-  .admin-actions button,
-  .admin-actions a {
-    flex: 1;
-  }
-
-  .admin-project-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-.toyota-add-box {
+.toyota-model-add-box {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr auto;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
   gap: 14px;
   align-items: end;
   padding: 16px;
@@ -118,20 +99,15 @@ button:disabled {
   margin-bottom: 18px;
 }
 
-.add-button-field {
-  display: flex;
-  align-items: end;
-}
-
-.toyota-plan-list {
+.toyota-model-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.toyota-plan-row {
+.toyota-model-row {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr auto;
+  grid-template-columns: 1.5fr 1fr 1fr auto auto;
   gap: 14px;
   align-items: end;
   padding: 16px;
@@ -140,17 +116,43 @@ button:disabled {
   background: #fff;
 }
 
-.toyota-plan-actions {
+.toyota-model-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.status-pill.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.toyota-model-actions {
   display: flex;
   justify-content: flex-end;
   align-items: end;
 }
 
-@media (max-width: 900px) {
-  .toyota-add-box,
-  .toyota-plan-row {
-    grid-template-columns: 1fr;
-  }
+.add-button-field {
+  display: flex;
+  align-items: end;
 }
 
 .login-page {
@@ -184,13 +186,33 @@ button:disabled {
   margin-bottom: 16px;
 }
 
-.toyota-plan-row .switch-row {
-  align-self: center;
-  justify-self: center;
+@media (max-width: 900px) {
+  .toyota-model-add-box,
+  .toyota-model-row {
+    grid-template-columns: 1fr;
+  }
+
+  .toyota-model-status {
+    justify-content: flex-start;
+  }
 }
 
-@media (max-width: 900px) {
-  .toyota-plan-row .switch-row {
-    justify-self: flex-start;
+@media (max-width: 760px) {
+  .admin-header {
+    flex-direction: column;
+  }
+
+  .admin-actions {
+    width: 100%;
+  }
+
+  .admin-actions button,
+  .admin-actions a {
+    flex: 1;
+  }
+
+  .admin-project-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
