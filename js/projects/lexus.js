@@ -26,12 +26,15 @@
     const subsidyAmount = Number(model.subsidyAmount);
     const subsidyTerm = Number(model.subsidyTerm);
 
-    if (!Number.isFinite(subsidyAmount) || subsidyAmount <= 0 ||
-        !Number.isFinite(subsidyTerm) || subsidyTerm <= 0) {
+    if (!Number.isFinite(subsidyAmount) || subsidyAmount <= 0 || !Number.isFinite(subsidyTerm) || subsidyTerm <= 0) {
       throw new Error("此車款目前未設定零利率專案。");
     }
 
-    const planMeta = calculatePlanMeta({ subsidyAmount, subsidyTerm });
+    const planMeta = calculatePlanMeta({
+      subsidyAmount,
+      subsidyTerm
+    });
+
     const result = calculateResultByLoanAndTerm(loan, term, planMeta);
 
     return {
@@ -54,6 +57,7 @@
   function calculatePlanMeta(plan) {
     const subsidyAmount = Number(plan.subsidyAmount);
     const subsidyTerm = Number(plan.subsidyTerm);
+
     const zeroMonthly = subsidyAmount / subsidyTerm;
 
     const interestMonthly = Finance.PMT(
@@ -68,7 +72,7 @@
     );
 
     const dlrSubsidyCap = totalSubsidy * DLR_RATIO;
-    const hotaiSubsidyCap = totalSubsidy * HOTAI_RATIO;
+    const hotaiSubsidyCap = totalSubsidy - dlrSubsidyCap;
 
     const baseIrr = Finance.RATE(
       subsidyTerm,
@@ -90,12 +94,9 @@
   }
 
   function calculateResultByLoanAndTerm(loan, term, meta) {
-    const monthlyPayment = Finance.ROUNDUP(
-      Finance.PMT(0, term, -loan),
-      0
-    );
+    const monthlyPayment = Finance.PMT(0, term, -loan);
 
-    const totalSubsidy = Finance.ROUNDUP(
+    const totalSubsidy = Finance.ROUND(
       -(
         Finance.PV(
           meta.systemIrr / 12,
@@ -127,13 +128,10 @@
     const maxMonthlyPayment =
       dlrBurden <= meta.dlrSubsidyCap
         ? monthlyPayment
-        : Finance.ROUNDUP(
-            Finance.PMT(
-              irr2 / 12,
-              term,
-              -loan + minDlrSubsidy
-            ),
-            0
+        : Finance.PMT(
+            irr2 / 12,
+            term,
+            -loan + minDlrSubsidy
           );
 
     const customerRate = Finance.ROUND(

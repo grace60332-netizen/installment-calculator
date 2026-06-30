@@ -1,6 +1,10 @@
 /**
  * js/projects/toyota188.js
  * TOYOTA 1.88%低利率專案公式
+ * 結果只顯示：
+ * - 月付款
+ * - 客戶利率
+ * - DLR補貼款
  */
 
 (function (global) {
@@ -52,12 +56,9 @@
       selectedModel: model,
       planMeta,
       columns: [
-        { key: "loanAmount", label: "貸款金額", type: "money" },
         { key: "monthlyPayment", label: "月付款", type: "money" },
-        { key: "dlrBurden", label: "DLR負擔", type: "money" },
-        { key: "maxMonthlyPayment", label: "最大月付款", type: "money" },
         { key: "customerRate", label: "客戶利率", type: "ratePercent3" },
-        { key: "minDlrSubsidy", label: "最小DLR補貼", type: "money" }
+        { key: "dlrSubsidy", label: "DLR補貼款", type: "money" }
       ],
       rows: [result]
     };
@@ -69,30 +70,18 @@
     const key = `${subsidyAmount}_${subsidyTerm}`;
     const matched = PLAN_TABLE[key];
 
-    if (matched) {
-      return {
-        subsidyAmount,
-        subsidyTerm,
-        customerAnnualRate: CUSTOMER_ANNUAL_RATE,
-        systemIrr: matched.systemIrr,
-        hotaiCap: matched.hotaiCap,
-        dlrCap: matched.dlrCap,
-        totalCap: matched.totalCap
-      };
+    if (!matched) {
+      throw new Error(`TOYOTA 1.88%：目前公式表尚未設定 ${subsidyAmount / 10000}萬/${subsidyTerm}期。`);
     }
 
-    /**
-     * 若後台新增 Excel 表外的組合，先用近似值避免系統壞掉。
-     * 若要 100% 對公式表，需把該組合加入 PLAN_TABLE。
-     */
     return {
       subsidyAmount,
       subsidyTerm,
       customerAnnualRate: CUSTOMER_ANNUAL_RATE,
-      systemIrr: 0.039,
-      hotaiCap: Infinity,
-      dlrCap: Infinity,
-      totalCap: Infinity
+      systemIrr: matched.systemIrr,
+      hotaiCap: matched.hotaiCap,
+      dlrCap: matched.dlrCap,
+      totalCap: matched.totalCap
     };
   }
 
@@ -122,15 +111,13 @@
       meta.hotaiCap
     );
 
-    const dlrBurden = totalSubsidy - hotaiSubsidy;
+    const dlrSubsidy = totalSubsidy - hotaiSubsidy;
 
     return {
       loanAmount: loan,
       monthlyPayment,
-      dlrBurden,
-      maxMonthlyPayment: monthlyPayment,
       customerRate: CUSTOMER_ANNUAL_RATE * 100,
-      minDlrSubsidy: dlrBurden
+      dlrSubsidy
     };
   }
 
