@@ -195,21 +195,11 @@
       return;
     }
 
-    if (result.projectId !== "zhonggu") {
-      document.getElementById("resultArea").innerHTML = `
-        <div class="result-card-list">
-          ${result.rows.map(row => `
-            <div class="result-card">
-              ${result.columns.map(col => `
-                <div class="result-card-row">
-                  <span>${escapeHtml(col.label)}</span>
-                  <strong>${formatCell(row[col.key], col.type)}</strong>
-                </div>
-              `).join("")}
-            </div>
-          `).join("")}
-        </div>
-      `;
+    if (
+      ["haoxiang", "lexiang", "legou"].includes(result.projectId) &&
+      result.rows.length > 1
+    ) {
+      renderCompareResult(result);
       return;
     }
 
@@ -231,6 +221,37 @@
     `;
   }
 
+  function renderCompareResult(result) {
+    const rateColumn = result.columns.find(col => col.key === "customerRate");
+    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+
+    document.getElementById("resultArea").innerHTML = `
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>欄位名稱 / 利率</th>
+              ${result.rows.map(row => `
+                <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
+              `).join("")}
+            </tr>
+          </thead>
+
+          <tbody>
+            ${compareColumns.map(col => `
+              <tr>
+                <th>${escapeHtml(col.label)}</th>
+                ${result.rows.map(row => `
+                  <td>${formatCell(row[col.key], col.type)}</td>
+                `).join("")}
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  
   function renderEmpty(message) {
     document.getElementById("resultArea").innerHTML = `
       <div class="empty">${escapeHtml(message)}</div>

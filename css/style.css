@@ -357,3 +357,43 @@ tbody tr:hover {
   text-align: right;
   font-weight: 900;
 }
+.compare-table-wrap {
+  overflow-x: auto;
+}
+
+.compare-table {
+  min-width: 520px;
+}
+
+.compare-table th:first-child,
+.compare-table td:first-child {
+  text-align: left;
+}
+
+.compare-table tbody th {
+  background: #fff;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 10px;
+  white-space: nowrap;
+}
+
+.compare-table td {
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .compare-table {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .compare-table th,
+  .compare-table td,
+  .compare-table tbody th {
+    padding: 14px 10px;
+    font-size: 15px;
+  }
+}
