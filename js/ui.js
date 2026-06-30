@@ -82,15 +82,9 @@
             <small>後台可調整每個車型對應的補助金額與期數。</small>
           </div>
 
-          <div class="field">
-            <label>目前設定補助金額</label>
-            <input id="toyotaSubsidyAmountDisplay" type="text" disabled>
-            <small>此欄位由車型自動帶入。</small>
-          </div>
-
-          <div class="field">
-            <label>目前設定補助期數</label>
-            <input id="toyotaSubsidyTermDisplay" type="text" disabled>
+          <div class="field full-span">
+            <label>適用專案</label>
+            <input id="toyotaProjectDisplay" type="text" disabled>
             <small>此欄位由車型自動帶入。</small>
           </div>
 
@@ -131,35 +125,28 @@
 
   function syncToyotaModelInfo(project) {
     const modelSelect = document.getElementById("toyotaModel");
-    const amountDisplay = document.getElementById("toyotaSubsidyAmountDisplay");
-    const termDisplay = document.getElementById("toyotaSubsidyTermDisplay");
+    const projectDisplay = document.getElementById("toyotaProjectDisplay");
 
     if (!modelSelect) return;
 
     const model = (project.models || []).find(item => item.id === modelSelect.value);
 
     if (!model) {
-      if (amountDisplay) amountDisplay.value = "";
-      if (termDisplay) termDisplay.value = "";
+      if (projectDisplay) projectDisplay.value = "";
       return;
     }
 
     const amount = Number(model.subsidyAmount);
     const term = Number(model.subsidyTerm);
 
-    if (amountDisplay) {
-      amountDisplay.value = Number.isFinite(amount) && amount > 0
-        ? `${formatMoney(amount)}`
-        : "不適用";
-    }
-
-    if (termDisplay) {
-      termDisplay.value = Number.isFinite(term) && term > 0
-        ? `${term} 期`
-        : "不適用";
+    if (projectDisplay) {
+      projectDisplay.value =
+        Number.isFinite(amount) && amount > 0 && Number.isFinite(term) && term > 0
+          ? `${amount / 10000}萬 / ${term}期`
+          : "無適用專案";
     }
   }
-
+  
   function renderSummary(project, loanWan, term, modelId) {
     const summary = document.getElementById("summary");
     const loanAmount = Math.round(Number(loanWan) * 10000);
@@ -251,7 +238,7 @@
       </div>
     `;
   }
-  
+
   function renderEmpty(message) {
     document.getElementById("resultArea").innerHTML = `
       <div class="empty">${escapeHtml(message)}</div>
