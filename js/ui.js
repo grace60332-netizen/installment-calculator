@@ -6,9 +6,14 @@
 (function (global) {
   "use strict";
 
-  function isZeroInterestProject(project) {
-    return project?.type === "toyota_zero_interest" || project?.type === "lexus_zero_interest";
+  function isModelBasedProject(project) {
+    return [
+      "toyota_zero_interest",
+      "lexus_zero_interest",
+      "toyota_low_interest_188"
+    ].includes(project?.type);
   }
+
   function renderApp(root, data, projects) {
     root.innerHTML = `
       <div class="app-layout">
@@ -68,28 +73,28 @@
     const box = document.getElementById("dynamicFields");
     const hint = document.getElementById("projectHint");
 
-    if (isZeroInterestProject(project)) {
+    if (isModelBasedProject(project)) {
       const modelLabel = project.modelSelectorLabel || "車型";
-      hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的補助金額與期數。`;
-
       const models = project.models || [];
+
+      hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的適用專案。`;
 
       box.innerHTML = `
         <div class="dynamic-grid full-span">
           <div class="field full-span">
-            <label for="toyotaModel">${escapeHtml(modelLabel)}</label>
-            <select id="toyotaModel">
+            <label for="modelSelect">${escapeHtml(modelLabel)}</label>
+            <select id="modelSelect">
               ${models.map(model => `
                 <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
               `).join("")}
             </select>
-            <small>後台可調整每個車型對應的補助金額與期數。</small>
+            <small>後台可調整每個${escapeHtml(modelLabel)}對應的金額與期數。</small>
           </div>
 
           <div class="field full-span">
             <label>適用專案</label>
-            <input id="toyotaProjectDisplay" type="text" disabled>
-            <small>此欄位由車型自動帶入。</small>
+            <input id="modelProjectDisplay" type="text" disabled>
+            <small>此欄位由${escapeHtml(modelLabel)}自動帶入。</small>
           </div>
 
           <div class="field">
@@ -105,7 +110,7 @@
         </div>
       `;
 
-      syncToyotaModelInfo(project);
+      syncModelInfo(project);
       return;
     }
 
@@ -127,9 +132,9 @@
     `;
   }
 
-  function syncToyotaModelInfo(project) {
-    const modelSelect = document.getElementById("toyotaModel");
-    const projectDisplay = document.getElementById("toyotaProjectDisplay");
+  function syncModelInfo(project) {
+    const modelSelect = document.getElementById("modelSelect");
+    const projectDisplay = document.getElementById("modelProjectDisplay");
 
     if (!modelSelect) return;
 
@@ -146,11 +151,11 @@
     if (projectDisplay) {
       projectDisplay.value =
         Number.isFinite(amount) && amount > 0 && Number.isFinite(term) && term > 0
-          ? `${amount / 10000}萬 / ${term}期`
+          ? `${formatWanAmount(amount)}萬 / ${term}期`
           : "無適用專案";
     }
   }
-  
+
   function renderSummary(project, loanWan, term, modelId) {
     const summary = document.getElementById("summary");
     const loanAmount = Math.round(Number(loanWan) * 10000);
@@ -161,17 +166,18 @@
       <div>實際金額：<strong>${formatMoney(loanAmount)}</strong></div>
     `;
 
-    if (isZeroInterestProject(project)) {
+    if (isModelBasedProject(project)) {
+      const modelLabel = project.modelSelectorLabel || "車型";
       const model = (project.models || []).find(p => p.id === modelId);
       const subsidyAmount = Number(model?.subsidyAmount);
       const subsidyTerm = Number(model?.subsidyTerm);
 
       html += `
-        <div>車型：<strong>${escapeHtml(model?.name || "")}</strong></div>
-        <div>補助設定：<strong>${
+        <div>${escapeHtml(modelLabel)}：<strong>${escapeHtml(model?.name || "")}</strong></div>
+        <div>適用專案：<strong>${
           Number.isFinite(subsidyAmount) && subsidyAmount > 0 && Number.isFinite(subsidyTerm) && subsidyTerm > 0
-            ? `${formatMoney(subsidyAmount)} / ${subsidyTerm} 期`
-            : "不適用"
+            ? `${formatWanAmount(subsidyAmount)}萬 / ${subsidyTerm}期`
+            : "無適用專案"
         }</strong></div>
         <div>客戶期數：<strong>${term}</strong> 期</div>
       `;
@@ -282,6 +288,12 @@
     return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 1 });
   }
 
+  function formatWanAmount(amount) {
+    const wan = Number(amount) / 10000;
+    if (!Number.isFinite(wan)) return "0";
+    return Number.isInteger(wan) ? String(wan) : String(wan).replace(/\.0+$/, "");
+  }
+
   function escapeHtml(text) {
     return String(text)
       .replaceAll("&", "&amp;")
@@ -299,7 +311,7 @@
     renderEmpty,
     showNotice,
     clearNotice,
-    syncToyotaModelInfo
+    syncModelInfo
   };
 
 })(typeof window !== "undefined" ? window : globalThis);

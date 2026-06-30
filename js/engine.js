@@ -6,7 +6,9 @@
  * - 樂享
  * - 樂購
  * - 中古尊榮
- * - TOYOTA零利率初版
+ * - TOYOTA 零利率
+ * - LEXUS 零利率
+ * - TOYOTA 1.88%低利率
  */
 
 (function (global) {
@@ -80,7 +82,7 @@
     }
 
     const rates = project.customerRates || [];
-    const rules = project.paymentRules || [];
+    const rules = project.paymentRules || {};
     const rows = [];
 
     for (const rate of rates) {
@@ -180,17 +182,27 @@
   }
 
   function calculateToyota(project, request) {
-  if (!global.ToyotaProject || typeof global.ToyotaProject.calculate !== "function") {
-    throw new Error("TOYOTA公式尚未載入，請確認 js/projects/toyota.js 已正確載入。");
+    if (!global.ToyotaProject || typeof global.ToyotaProject.calculate !== "function") {
+      throw new Error("TOYOTA公式尚未載入，請確認 js/projects/toyota.js 已正確載入。");
+    }
+
+    return global.ToyotaProject.calculate(project, request);
   }
 
-  return global.ToyotaProject.calculate(project, request);
-}
-  function getToyotaNominalRate(amount, term) {
-    if (term >= 48) return 0.0399;
-    if (term >= 36) return 0.0425;
-    if (term >= 30) return 0.0425;
-    return 0.045;
+  function calculateLexus(project, request) {
+    if (!global.LexusProject || typeof global.LexusProject.calculate !== "function") {
+      throw new Error("LEXUS公式尚未載入，請確認 js/projects/lexus.js 已正確載入。");
+    }
+
+    return global.LexusProject.calculate(project, request);
+  }
+
+  function calculateToyota188(project, request) {
+    if (!global.Toyota188Project || typeof global.Toyota188Project.calculate !== "function") {
+      throw new Error("TOYOTA 1.88%低利率公式尚未載入，請確認 js/projects/toyota188.js 已正確載入。");
+    }
+
+    return global.Toyota188Project.calculate(project, request);
   }
 
   function getColumns(project) {
@@ -242,7 +254,11 @@
       ];
     }
 
-    if (project.id === "toyota_zero_interest") {
+    if (
+      project.type === "toyota_zero_interest" ||
+      project.type === "lexus_zero_interest" ||
+      project.type === "toyota_low_interest_188"
+    ) {
       return [
         { key: "loanAmount", label: "貸款金額", type: "money" },
         { key: "monthlyPayment", label: "月付款", type: "money" },
@@ -255,13 +271,6 @@
 
     return [];
   }
-  function calculateLexus(project, request) {
-    if (!global.LexusProject || typeof global.LexusProject.calculate !== "function") {
-      throw new Error("LEXUS公式尚未載入，請確認 js/projects/lexus.js 已正確載入。");
-    }
-
-    return global.LexusProject.calculate(project, request);
-  }
 
   function calculate(project, request) {
     if (!project) {
@@ -271,9 +280,15 @@
     if (project.type === "toyota_zero_interest") {
       return calculateToyota(project, request);
     }
+
     if (project.type === "lexus_zero_interest") {
       return calculateLexus(project, request);
     }
+
+    if (project.type === "toyota_low_interest_188") {
+      return calculateToyota188(project, request);
+    }
+
     return calculateStandard(project, request);
   }
 
@@ -281,7 +296,8 @@
     calculate,
     calculateStandard,
     calculateToyota,
-    calculateLexus
+    calculateLexus,
+    calculateToyota188
   };
 
 })(typeof window !== "undefined" ? window : globalThis);

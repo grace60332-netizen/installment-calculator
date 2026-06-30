@@ -1,6 +1,6 @@
 /**
  * js/admin.js
- * 管理後台：登入驗證 + 專案啟用停用 + 零利率車型/車款金額期數管理
+ * 管理後台：登入驗證 + 專案啟用停用 + 車型/車款金額期數管理
  */
 
 (function () {
@@ -9,17 +9,22 @@
   const state = {
     data: null,
     user: null,
-    adminProfile: null
+    adminProfile: null,
+    editingProjectId: null
   };
 
   document.addEventListener("DOMContentLoaded", init);
 
-  function isZeroInterestProject(project) {
-    return project?.type === "toyota_zero_interest" || project?.type === "lexus_zero_interest";
+  function isModelBasedProject(project) {
+    return [
+      "toyota_zero_interest",
+      "lexus_zero_interest",
+      "toyota_low_interest_188"
+    ].includes(project?.type);
   }
 
-  function getZeroInterestProjects() {
-    return (state.data.projects || []).filter(project => isZeroInterestProject(project));
+  function getModelBasedProjects() {
+    return (state.data.projects || []).filter(project => isModelBasedProject(project));
   }
 
   function init() {
@@ -91,8 +96,7 @@
     `;
 
     document.getElementById("loginBtn").addEventListener("click", handleLogin);
-
-    document.getElementById("loginPassword").addEventListener("keydown", (event) => {
+    document.getElementById("loginPassword").addEventListener("keydown", event => {
       if (event.key === "Enter") handleLogin();
     });
   }
@@ -119,7 +123,13 @@
 
     try {
       state.data = await StorageService.loadProjectData();
+
+      getModelBasedProjects().forEach(project => {
+        if (!Array.isArray(project.models)) project.models = [];
+      });
+
       renderAdmin();
+
     } catch (err) {
       renderError(err.message);
       console.error(err);
@@ -138,20 +148,14 @@
   }
 
   function renderAdmin() {
-    const projects = state.data.projects || [];
-    const zeroInterestProjects = getZeroInterestProjects();
-
-    zeroInterestProjects.forEach(project => {
-      if (!Array.isArray(project.models)) {
-        project.models = [];
-      }
-    });
+    const editingProject = state.editingProjectId
+      ? getProjectById(state.editingProjectId)
+      : null;
 
     document.getElementById("adminApp").innerHTML = `
       <div class="app-layout">
         <aside class="sidebar">
           <div class="sidebar-title">分期試算工具</div>
-
           <nav class="sidebar-nav">
             <a href="index.html">專案試算</a>
             <a href="car-loan.html">車貸補貼息試算</a>
@@ -163,7 +167,7 @@
           <div class="wrap">
             <div class="admin-header">
               <div>
-                <h1 class="title">管理後台</h1>
+                <h1 class="title">${editingProject ? escapeHtml(editingProject.name) + "設定" : "管理後台"}</h1>
                 <p class="subtitle">
                   已登入：<strong>${escapeHtml(state.adminProfile?.name || state.user?.email || "")}</strong><br>
                   修改後按「儲存設定」，前台重新整理後會套用最新設定。
@@ -171,6 +175,7 @@
               </div>
 
               <div class="admin-actions">
+                ${editingProject ? `<button id="backBtn" type="button" class="ghost">回專案列表</button>` : ""}
                 <button id="logoutBtn" type="button" class="ghost">登出</button>
                 <button id="saveBtn" type="button">儲存設定</button>
               </div>
@@ -178,14 +183,11 @@
 
             <div id="notice" class="notice"></div>
 
-            <div class="card">
-              <h2 class="section-title">專案啟用狀態</h2>
-              <div class="admin-project-list">
-                ${projects.map((project, index) => renderProjectRow(project, index)).join("")}
-              </div>
-            </div>
-
-            ${zeroInterestProjects.map(project => renderZeroInterestAdminCard(project)).join("")}
+            ${
+              editingProject
+                ? renderModelBasedProjectEditor(editingProject)
+                : renderProjectList()
+            }
 
             <div class="card">
               <h2 class="section-title">目前 JSON 預覽</h2>
@@ -200,9 +202,22 @@
     updateJsonPreview();
   }
 
+  function renderProjectList() {
+    const projects = state.data.projects || [];
+
+    return `
+      <div class="card">
+        <h2 class="section-title">專案啟用狀態</h2>
+        <div class="admin-project-list">
+          ${projects.map((project, index) => renderProjectRow(project, index)).join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function renderProjectRow(project, index) {
     const checked = project.enabled !== false ? "checked" : "";
-    const typeLabel = isZeroInterestProject(project) ? "零利率專案" : "一般專案";
+    const typeLabel = isModelBasedProject(project) ? "車型/車款專案" : "一般專案";
 
     return `
       <div class="admin-project-row">
@@ -214,22 +229,30 @@
           <div class="admin-project-id">${escapeHtml(project.id)}</div>
         </div>
 
-        <label class="switch-row">
-          <input type="checkbox" class="project-enabled" data-index="${index}" ${checked}>
-          <span>啟用</span>
-        </label>
+        <div class="admin-actions">
+          <label class="switch-row">
+            <input type="checkbox" class="project-enabled" data-index="${index}" ${checked}>
+            <span>啟用</span>
+          </label>
+
+          ${
+            isModelBasedProject(project)
+              ? `<button type="button" class="ghost edit-project-btn" data-project-id="${escapeAttr(project.id)}">編輯設定</button>`
+              : ""
+          }
+        </div>
       </div>
     `;
   }
 
-  function renderZeroInterestAdminCard(project) {
+  function renderModelBasedProjectEditor(project) {
     const label = project.modelSelectorLabel || "車型";
 
     return `
       <div class="card">
         <h2 class="section-title">${escapeHtml(project.name)} 補助管理</h2>
         <p class="subtitle">
-          請直接在每個${escapeHtml(label)}後方填寫補助金額與期數。若本月不適用零利率，金額與期數填 0 即可。
+          請直接在每個${escapeHtml(label)}後方填寫金額與期數。若本月不適用，金額與期數填 0 即可。
         </p>
 
         <div class="toyota-model-add-box">
@@ -239,7 +262,7 @@
               type="text"
               class="zero-model-new-name"
               data-project-id="${escapeAttr(project.id)}"
-              placeholder="例如：RX / NX / PRIUS PHEV"
+              placeholder="例如：RX / NX / COROLLA SPORT"
             >
           </div>
 
@@ -277,13 +300,13 @@
         </div>
 
         <div class="toyota-model-list">
-          ${(project.models || []).map((model, index) => renderZeroInterestModelRow(project, model, index)).join("")}
+          ${(project.models || []).map((model, index) => renderModelRow(project, model, index)).join("")}
         </div>
       </div>
     `;
   }
 
-  function renderZeroInterestModelRow(project, model, index) {
+  function renderModelRow(project, model, index) {
     const amount = Number(model.subsidyAmount || 0);
     const term = Number(model.subsidyTerm || 0);
     const isActive = amount > 0 && term > 0;
@@ -337,14 +360,13 @@
           >
         </div>
 
-        <div
-          class="toyota-model-status zero-model-status"
+        <div class="toyota-model-status zero-model-status"
           data-project-id="${escapeAttr(project.id)}"
-          data-index="${index}"
-        >
-          ${isActive
-            ? `<span class="status-pill active">啟用</span>`
-            : `<span class="status-pill inactive">無適用專案</span>`
+          data-index="${index}">
+          ${
+            isActive
+              ? `<span class="status-pill active">啟用</span>`
+              : `<span class="status-pill inactive">無適用專案</span>`
           }
         </div>
 
@@ -367,6 +389,13 @@
       input.addEventListener("change", handleEnabledChange);
     });
 
+    document.querySelectorAll(".edit-project-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        state.editingProjectId = button.dataset.projectId;
+        renderAdmin();
+      });
+    });
+
     document.querySelectorAll(".zero-model-name").forEach(input => {
       input.addEventListener("input", handleZeroModelChange);
     });
@@ -385,6 +414,11 @@
 
     document.querySelectorAll(".add-zero-model-btn").forEach(button => {
       button.addEventListener("click", addZeroModel);
+    });
+
+    document.getElementById("backBtn")?.addEventListener("click", () => {
+      state.editingProjectId = null;
+      renderAdmin();
     });
 
     document.getElementById("saveBtn")?.addEventListener("click", save);
@@ -455,7 +489,7 @@
     const project = getProjectById(projectId);
 
     if (!project) {
-      showNotice("找不到零利率專案。");
+      showNotice("找不到專案。");
       return;
     }
 
@@ -526,6 +560,8 @@
 
       await StorageService.saveProjectData(state.data);
 
+      state.editingProjectId = null;
+      renderAdmin();
       showNotice("設定已儲存。前台重新整理後會套用最新設定。");
 
     } catch (err) {
@@ -539,7 +575,7 @@
   }
 
   function cleanDataBeforeSave() {
-    getZeroInterestProjects().forEach(project => {
+    getModelBasedProjects().forEach(project => {
       delete project.plans;
       delete project.planSelectorLabel;
 
@@ -577,8 +613,8 @@
   }
 
   function cssEscape(value) {
-    if (global.CSS && typeof global.CSS.escape === "function") {
-      return global.CSS.escape(value);
+    if (window.CSS && typeof window.CSS.escape === "function") {
+      return window.CSS.escape(value);
     }
 
     return String(value).replace(/"/g, '\\"');
