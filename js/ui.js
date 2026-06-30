@@ -195,6 +195,24 @@
       return;
     }
 
+    if (result.projectId !== "zhonggu") {
+      document.getElementById("resultArea").innerHTML = `
+        <div class="result-card-list">
+          ${result.rows.map(row => `
+            <div class="result-card">
+              ${result.columns.map(col => `
+                <div class="result-card-row">
+                  <span>${escapeHtml(col.label)}</span>
+                  <strong>${formatCell(row[col.key], col.type)}</strong>
+                </div>
+              `).join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+      return;
+    }
+
     document.getElementById("resultArea").innerHTML = `
       <table>
         <thead>

@@ -318,3 +318,42 @@ tbody tr:hover {
     white-space: nowrap;
   }
 }
+
+.result-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.result-card + .result-card {
+  margin-top: 4px;
+}
+
+.result-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-card-row:last-child {
+  border-bottom: 0;
+}
+
+.result-card-row span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.result-card-row strong {
+  text-align: right;
+  font-weight: 900;
+}
