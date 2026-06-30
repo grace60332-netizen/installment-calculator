@@ -120,6 +120,7 @@
       "name": "TOYOTA零利率專案",
       "type": "toyota_zero_interest",
       "enabled": true,
+      "modelSelectorLabel": "車型",
       "planSelectorLabel": "適用專案",
       "termInputLabel": "客戶期數",
       "loanInputLabel": "客戶貸款金額",
@@ -146,6 +147,20 @@
         { "id": "p24_24", "name": "24萬24期", "subsidyAmount": 240000, "subsidyTerm": 24 },
         { "id": "p30_24", "name": "30萬24期", "subsidyAmount": 300000, "subsidyTerm": 24 },
         { "id": "p20_20", "name": "20萬20期", "subsidyAmount": 200000, "subsidyTerm": 20 }
+      ],
+      "models": [
+        { "id": "corolla_sport", "name": "COROLLA SPORT", "planId": "p30_30", "enabled": true },
+        { "id": "altis_hybrid", "name": "ALTIS 油電", "planId": "p50_50", "enabled": true },
+        { "id": "altis_gas", "name": "ALTIS 汽油", "planId": "p80_50", "enabled": true },
+        { "id": "vios", "name": "VIOS", "planId": "p40_30", "enabled": true },
+        { "id": "corolla_cross_gas", "name": "COROLLA CROSS 汽油", "planId": "p70_40", "enabled": true },
+        { "id": "corolla_cross_hybrid", "name": "COROLLA CROSS 油電", "planId": "p70_40", "enabled": true },
+        { "id": "town_ace_pu", "name": "TOWN ACE PU", "planId": "p50_50", "enabled": true },
+        { "id": "town_ace_van", "name": "TOWN ACE VAN", "planId": "p50_50", "enabled": true },
+        { "id": "yaris_cross", "name": "YARIS CROSS", "planId": "p60_40", "enabled": true },
+        { "id": "rav4_hv", "name": "RAV4 HV", "planId": "p20_20", "enabled": true },
+        { "id": "crown", "name": "CROWN", "planId": null, "enabled": false },
+        { "id": "sienna", "name": "SIENNA", "planId": null, "enabled": false }
       ]
     }
   ]

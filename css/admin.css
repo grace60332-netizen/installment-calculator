@@ -183,3 +183,14 @@ button:disabled {
   display: block;
   margin-bottom: 16px;
 }
+
+.toyota-plan-row .switch-row {
+  align-self: center;
+  justify-self: center;
+}
+
+@media (max-width: 900px) {
+  .toyota-plan-row .switch-row {
+    justify-self: flex-start;
+  }
+}

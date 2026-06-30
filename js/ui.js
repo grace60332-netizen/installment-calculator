@@ -66,31 +66,56 @@ function renderApp(root, data, projects) {
     const hint = document.getElementById("projectHint");
 
     if (project.type === "toyota_zero_interest") {
-      hint.textContent = "TOYOTA 零利率需選擇適用專案，並輸入客戶實際貸款金額與期數。";
+      hint.textContent = "請先選擇車型，系統會自動帶出適用的零利率專案，避免選錯。";
+
+      const enabledModels = (project.models || []).filter(model => model.enabled !== false);
+      const plans = project.plans || [];
 
       box.innerHTML = `
         <div class="dynamic-grid full-span">
           <div class="field full-span">
+            <label for="toyotaModel">車型</label>
+            <select id="toyotaModel">
+              ${enabledModels.map(model => `
+                <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
+              `).join("")}
+            </select>
+            <small>每個車型會自動對應目前設定的適用專案。</small>
+          </div>
+
+          <div class="field full-span">
             <label for="toyotaPlan">適用專案</label>
-            <select id="toyotaPlan">
-              ${(project.plans || []).map(plan => `
+            <select id="toyotaPlan" disabled>
+              ${plans.map(plan => `
                 <option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</option>
               `).join("")}
             </select>
+            <small id="toyotaPlanHint">此欄位由車型自動帶入，不需手動選擇。</small>
           </div>
 
           <div class="field">
             <label for="loanWan">客戶貸款金額（萬）</label>
-            <input id="loanWan" type="number" min="10" max="100" step="0.1" value="100">
+            <input id="loanWan" type="number" min="10" max="500" step="0.1" value="100">
             <small>例如輸入 63.5 代表 635,000 元。</small>
           </div>
 
           <div class="field">
             <label for="loanTerm">客戶期數</label>
-            <input id="loanTerm" type="number" min="1" max="60" step="1" value="30">
+            <input id="loanTerm" type="number" min="1" max="84" step="1" value="30">
           </div>
         </div>
       `;
+
+      global.UI = {
+        renderApp,
+        renderDynamicFields,
+        renderSummary,
+        renderResult,
+        renderEmpty,
+        showNotice,
+        clearNotice,
+        syncToyotaPlanFromModel
+      };
       return;
     }
 
@@ -112,6 +137,25 @@ function renderApp(root, data, projects) {
     `;
   }
 
+  function syncToyotaPlanFromModel(project) {
+    const modelSelect = document.getElementById("toyotaModel");
+    const planSelect = document.getElementById("toyotaPlan");
+    const hint = document.getElementById("toyotaPlanHint");
+
+    if (!modelSelect || !planSelect) return;
+
+    const model = (project.models || []).find(item => item.id === modelSelect.value);
+    const plan = (project.plans || []).find(item => item.id === model?.planId);
+
+    if (plan) {
+      planSelect.value = plan.id;
+      if (hint) hint.textContent = `目前車型適用：${plan.name}`;
+    } else {
+      planSelect.value = "";
+      if (hint) hint.textContent = "此車型目前未設定適用零利率專案。";
+    }
+}
+  
   function renderSummary(project, loanWan, term, planId) {
     const summary = document.getElementById("summary");
     const loanAmount = Math.round(Number(loanWan) * 10000);
@@ -123,14 +167,18 @@ function renderApp(root, data, projects) {
     `;
 
     if (project.type === "toyota_zero_interest") {
+      const modelId = document.getElementById("toyotaModel")?.value;
+      const model = (project.models || []).find(p => p.id === modelId);
       const plan = (project.plans || []).find(p => p.id === planId);
+
       html += `
+        <div>車型：<strong>${escapeHtml(model?.name || "")}</strong></div>
         <div>適用專案：<strong>${escapeHtml(plan?.name || "")}</strong></div>
         <div>客戶期數：<strong>${term}</strong> 期</div>
       `;
     }
 
-    summary.innerHTML = html;
+  summary.innerHTML = html;
   }
 
   function renderResult(result) {

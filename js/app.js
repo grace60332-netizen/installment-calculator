@@ -56,11 +56,17 @@
   function bindDynamicEvents() {
     const loanWan = document.getElementById("loanWan");
     const loanTerm = document.getElementById("loanTerm");
-    const toyotaPlan = document.getElementById("toyotaPlan");
+    const toyotaModel = document.getElementById("toyotaModel");
 
     if (loanWan) loanWan.addEventListener("input", calculate);
     if (loanTerm) loanTerm.addEventListener("input", calculate);
-    if (toyotaPlan) toyotaPlan.addEventListener("change", calculate);
+
+    if (toyotaModel) {
+      toyotaModel.addEventListener("change", () => {
+        UI.syncToyotaPlanFromModel(state.currentProject);
+        calculate();
+      });
+    }
   }
 
   function calculate() {
@@ -72,7 +78,25 @@
 
       const loanWan = Number(document.getElementById("loanWan")?.value);
       const term = Number(document.getElementById("loanTerm")?.value);
-      const planId = document.getElementById("toyotaPlan")?.value || null;
+      let planId = document.getElementById("toyotaPlan")?.value || null;
+
+      if (project.type === "toyota_zero_interest") {
+        const modelId = document.getElementById("toyotaModel")?.value || null;
+        const model = (project.models || []).find(item => item.id === modelId);
+
+        if (!model) {
+          UI.renderEmpty("請選擇車型。");
+          return;
+        }
+
+        if (!model.planId) {
+          UI.showNotice("此車型目前未設定適用零利率專案。");
+          UI.renderEmpty("此車型目前未設定適用零利率專案。");
+          return;
+        }
+
+        planId = model.planId;
+      }
 
       if (!Number.isFinite(loanWan)) {
         UI.renderEmpty("請輸入貸款金額。");
@@ -122,10 +146,12 @@
 
     if (project.type === "toyota_zero_interest") {
       const term = document.getElementById("loanTerm");
-      const plan = document.getElementById("toyotaPlan");
+      const model = document.getElementById("toyotaModel");
 
       if (term) term.value = 30;
-      if (plan) plan.selectedIndex = 0;
+      if (model) model.selectedIndex = 0;
+
+      UI.syncToyotaPlanFromModel(project);
     }
 
     calculate();

@@ -1,6 +1,6 @@
 /**
  * js/admin.js
- * 管理後台：登入驗證 + 專案啟用停用 + TOYOTA子專案管理
+ * 管理後台：登入驗證 + 專案啟用停用 + TOYOTA子專案管理 + TOYOTA車型管理
  */
 
 (function () {
@@ -132,6 +132,8 @@
   function renderAdmin() {
     const projects = state.data.projects || [];
     const toyotaProject = getToyotaProject();
+    const toyotaPlans = toyotaProject?.plans || [];
+    const toyotaModels = toyotaProject?.models || [];
 
     document.getElementById("adminApp").innerHTML = `
       <div class="app-layout">
@@ -197,7 +199,39 @@
               </div>
 
               <div class="toyota-plan-list">
-                ${(toyotaProject?.plans || []).map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
+                ${toyotaPlans.map((plan, index) => renderToyotaPlanRow(plan, index)).join("")}
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 class="section-title">TOYOTA 車型管理</h2>
+              <p class="subtitle">
+                每個車型只能對應一個零利率專案。前台使用者選車型後，系統會自動帶入這裡設定的專案。
+              </p>
+
+              <div class="toyota-add-box">
+                <div class="field">
+                  <label for="newToyotaModelName">車型名稱</label>
+                  <input id="newToyotaModelName" type="text" placeholder="例如：COROLLA CROSS 汽油">
+                </div>
+
+                <div class="field">
+                  <label for="newToyotaModelPlan">對應專案</label>
+                  <select id="newToyotaModelPlan">
+                    <option value="">不適用</option>
+                    ${toyotaPlans.map(plan => `
+                      <option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</option>
+                    `).join("")}
+                  </select>
+                </div>
+
+                <div class="field add-button-field">
+                  <button id="addToyotaModelBtn" type="button">新增車型</button>
+                </div>
+              </div>
+
+              <div class="toyota-plan-list">
+                ${toyotaModels.map((model, index) => renderToyotaModelRow(model, index, toyotaPlans)).join("")}
               </div>
             </div>
 
@@ -263,6 +297,50 @@
     `;
   }
 
+  function renderToyotaModelRow(model, index, plans) {
+    return `
+      <div class="toyota-plan-row">
+        <div class="field">
+          <label>車型名稱</label>
+          <input
+            type="text"
+            class="toyota-model-name"
+            data-index="${index}"
+            value="${escapeAttr(model.name)}"
+          >
+        </div>
+
+        <div class="field">
+          <label>對應專案</label>
+          <select class="toyota-model-plan" data-index="${index}">
+            <option value="">不適用</option>
+            ${plans.map(plan => `
+              <option value="${escapeHtml(plan.id)}" ${model.planId === plan.id ? "selected" : ""}>
+                ${escapeHtml(plan.name)}
+              </option>
+            `).join("")}
+          </select>
+        </div>
+
+        <label class="switch-row">
+          <input
+            type="checkbox"
+            class="toyota-model-enabled"
+            data-index="${index}"
+            ${model.enabled !== false ? "checked" : ""}
+          >
+          <span>啟用</span>
+        </label>
+
+        <div class="toyota-plan-actions">
+          <button type="button" class="ghost delete-toyota-model" data-index="${index}">
+            刪除
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   function bindEvents() {
     document.querySelectorAll(".project-enabled").forEach(input => {
       input.addEventListener("change", handleEnabledChange);
@@ -284,9 +362,26 @@
       button.addEventListener("click", deleteToyotaPlan);
     });
 
-    document.getElementById("addToyotaPlanBtn").addEventListener("click", addToyotaPlan);
-    document.getElementById("saveBtn").addEventListener("click", save);
-    document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+    document.querySelectorAll(".toyota-model-name").forEach(input => {
+      input.addEventListener("input", handleToyotaModelChange);
+    });
+
+    document.querySelectorAll(".toyota-model-plan").forEach(select => {
+      select.addEventListener("change", handleToyotaModelChange);
+    });
+
+    document.querySelectorAll(".toyota-model-enabled").forEach(input => {
+      input.addEventListener("change", handleToyotaModelChange);
+    });
+
+    document.querySelectorAll(".delete-toyota-model").forEach(button => {
+      button.addEventListener("click", deleteToyotaModel);
+    });
+
+    document.getElementById("addToyotaPlanBtn")?.addEventListener("click", addToyotaPlan);
+    document.getElementById("addToyotaModelBtn")?.addEventListener("click", addToyotaModel);
+    document.getElementById("saveBtn")?.addEventListener("click", save);
+    document.getElementById("logoutBtn")?.addEventListener("click", handleLogout);
   }
 
   async function handleLogout() {
@@ -324,6 +419,30 @@
     updateJsonPreview();
   }
 
+  function handleToyotaModelChange(event) {
+    const index = Number(event.target.dataset.index);
+    const toyotaProject = getToyotaProject();
+
+    if (!toyotaProject || !toyotaProject.models[index]) return;
+
+    const model = toyotaProject.models[index];
+
+    if (event.target.classList.contains("toyota-model-name")) {
+      model.name = event.target.value.trim();
+      model.id = generateToyotaModelId(model.name);
+    }
+
+    if (event.target.classList.contains("toyota-model-plan")) {
+      model.planId = event.target.value || null;
+    }
+
+    if (event.target.classList.contains("toyota-model-enabled")) {
+      model.enabled = event.target.checked;
+    }
+
+    updateJsonPreview();
+  }
+
   function addToyotaPlan() {
     const toyotaProject = getToyotaProject();
 
@@ -346,12 +465,12 @@
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      showNotice("請輸入正確的補貼金額。");
+      showNotice("請輸入正確的金額。");
       return;
     }
 
     if (!Number.isFinite(term) || term <= 0) {
-      showNotice("請輸入正確的補貼期數。");
+      showNotice("請輸入正確的期數。");
       return;
     }
 
@@ -366,6 +485,37 @@
     showNotice("已新增 TOYOTA 子專案，記得按「儲存設定」。");
   }
 
+  function addToyotaModel() {
+    const toyotaProject = getToyotaProject();
+
+    if (!toyotaProject) {
+      showNotice("找不到 TOYOTA 零利率專案。");
+      return;
+    }
+
+    if (!Array.isArray(toyotaProject.models)) {
+      toyotaProject.models = [];
+    }
+
+    const name = document.getElementById("newToyotaModelName").value.trim();
+    const planId = document.getElementById("newToyotaModelPlan").value || null;
+
+    if (!name) {
+      showNotice("請輸入車型名稱。");
+      return;
+    }
+
+    toyotaProject.models.push({
+      id: generateToyotaModelId(name),
+      name,
+      planId,
+      enabled: true
+    });
+
+    renderAdmin();
+    showNotice("已新增 TOYOTA 車型，記得按「儲存設定」。");
+  }
+
   function deleteToyotaPlan(event) {
     const index = Number(event.target.dataset.index);
     const toyotaProject = getToyotaProject();
@@ -374,12 +524,39 @@
 
     const plan = toyotaProject.plans[index];
     const ok = confirm(`確定要刪除「${plan.name}」嗎？`);
+
     if (!ok) return;
 
     toyotaProject.plans.splice(index, 1);
 
+    if (Array.isArray(toyotaProject.models)) {
+      toyotaProject.models = toyotaProject.models.map(model => {
+        if (model.planId === plan.id) {
+          return { ...model, planId: null };
+        }
+        return model;
+      });
+    }
+
     renderAdmin();
-    showNotice("已刪除 TOYOTA 子專案，記得按「儲存設定」。");
+    showNotice("已刪除 TOYOTA 子專案，相關車型已改為不適用，記得按「儲存設定」。");
+  }
+
+  function deleteToyotaModel(event) {
+    const index = Number(event.target.dataset.index);
+    const toyotaProject = getToyotaProject();
+
+    if (!toyotaProject || !Array.isArray(toyotaProject.models)) return;
+
+    const model = toyotaProject.models[index];
+    const ok = confirm(`確定要刪除「${model.name}」嗎？`);
+
+    if (!ok) return;
+
+    toyotaProject.models.splice(index, 1);
+
+    renderAdmin();
+    showNotice("已刪除 TOYOTA 車型，記得按「儲存設定」。");
   }
 
   async function save() {
@@ -408,20 +585,35 @@
   function cleanDataBeforeSave() {
     const toyotaProject = getToyotaProject();
 
-    if (!toyotaProject || !Array.isArray(toyotaProject.plans)) return;
+    if (!toyotaProject) return;
 
-    toyotaProject.plans = toyotaProject.plans
-      .filter(plan =>
-        plan.name &&
-        Number.isFinite(Number(plan.subsidyAmount)) &&
-        Number.isFinite(Number(plan.subsidyTerm))
-      )
-      .map(plan => ({
-        id: generateToyotaPlanId(plan.name, Number(plan.subsidyAmount), Number(plan.subsidyTerm)),
-        name: String(plan.name).trim(),
-        subsidyAmount: Number(plan.subsidyAmount),
-        subsidyTerm: Number(plan.subsidyTerm)
-      }));
+    if (Array.isArray(toyotaProject.plans)) {
+      toyotaProject.plans = toyotaProject.plans
+        .filter(plan =>
+          plan.name &&
+          Number.isFinite(Number(plan.subsidyAmount)) &&
+          Number.isFinite(Number(plan.subsidyTerm))
+        )
+        .map(plan => ({
+          id: generateToyotaPlanId(plan.name, Number(plan.subsidyAmount), Number(plan.subsidyTerm)),
+          name: String(plan.name).trim(),
+          subsidyAmount: Number(plan.subsidyAmount),
+          subsidyTerm: Number(plan.subsidyTerm)
+        }));
+    }
+
+    const validPlanIds = new Set((toyotaProject.plans || []).map(plan => plan.id));
+
+    if (Array.isArray(toyotaProject.models)) {
+      toyotaProject.models = toyotaProject.models
+        .filter(model => model.name)
+        .map(model => ({
+          id: generateToyotaModelId(model.name),
+          name: String(model.name).trim(),
+          planId: model.planId && validPlanIds.has(model.planId) ? model.planId : null,
+          enabled: model.enabled !== false
+        }));
+    }
   }
 
   function getToyotaProject() {
@@ -433,6 +625,16 @@
     const safeAmount = String(amountWan).replace(".", "_");
     const safeTerm = String(term);
     return `toyota_${safeAmount}wan_${safeTerm}`;
+  }
+
+  function generateToyotaModelId(name) {
+    return String(name)
+      .trim()
+      .toLowerCase()
+      .replaceAll(" ", "_")
+      .replaceAll("/", "_")
+      .replaceAll("-", "_")
+      .replace(/[^\w\u4e00-\u9fa5]/g, "");
   }
 
   function updateJsonPreview() {
