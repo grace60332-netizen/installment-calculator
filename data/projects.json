@@ -12,6 +12,7 @@
       "enabled": true,
       "defaultTerm": 60,
       "customerRates": [3.99, 4.25],
+      "maxLoanWan": 500,
       "commissionRules": [
         { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
         { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
@@ -43,6 +44,7 @@
       "enabled": true,
       "defaultTerm": 60,
       "customerRates": [3.99, 4.25],
+      "maxLoanWan": 300,
       "commissionRules": [
         { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
         { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
@@ -73,6 +75,7 @@
       "enabled": true,
       "defaultTerm": 60,
       "customerRates": [3.99, 4.25],
+      "maxLoanWan": 300,
       "commissionRules": [
         { "rate": 3.99, "minLoan": 1500000, "commissionBelowMinLoan": 8000, "commissionAtOrAboveMinLoan": 10000 },
         { "rate": 4.25, "minLoan": 0, "commissionBelowMinLoan": 15000, "commissionAtOrAboveMinLoan": 15000 }
@@ -91,6 +94,7 @@
       "enabled": true,
       "defaultTerm": 60,
       "customerRates": [4.50, 4.75, 5.00, 5.25, 5.50, 5.75],
+      "maxLoanWan": 400,
       "commissionRules": [
         { "minLoan": 1000000, "rateMin": 4.5, "rateMax": 4.75, "commission": 8000 },
         { "minLoan": 1500000, "rateMin": 4.75, "rateMax": 99, "commission": 15000 },
@@ -122,6 +126,7 @@
       "enabled": true,
       "modelSelectorLabel": "車型",
       "termInputLabel": "客戶期數",
+      "maxTerm": 60,
       "loanInputLabel": "客戶貸款金額",
       "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
       "models": [

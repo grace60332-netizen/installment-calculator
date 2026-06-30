@@ -85,11 +85,17 @@
 
       if (project.type !== "toyota_zero_interest") {
         const min = state.data.defaultLoanWanMin || 100;
-        const max = state.data.defaultLoanWanMax || 500;
+        const max = project.maxLoanWan || state.data.defaultLoanWanMax || 500;
 
-        if (loanWan < min || loanWan > max) {
-          UI.showNotice(`貸款金額請輸入 ${min}～${max} 萬。`);
-          UI.renderEmpty(`貸款金額請輸入 ${min}～${max} 萬。`);
+        if (loanWan < min) {
+          UI.showNotice(`貸款金額最低為 ${min} 萬。`);
+          UI.renderEmpty(`貸款金額最低為 ${min} 萬。`);
+          return;
+        }
+
+        if (loanWan > max) {
+          UI.showNotice(`${project.name} 的貸款金額上限為 ${max} 萬。`);
+          UI.renderEmpty(`${project.name} 的貸款金額上限為 ${max} 萬。`);
           return;
         }
       }
@@ -111,9 +117,12 @@
           return;
         }
 
-        if (!Number.isFinite(term) || term <= 0) {
-          UI.renderEmpty("請輸入期數。");
-          return;
+        const maxTerm = project.maxTerm || 60;
+
+        if (term > maxTerm) {
+          UI.showNotice(`TOYOTA零利率專案的客戶期數上限為 ${maxTerm} 期。`);
+          UI.renderEmpty(`TOYOTA零利率專案的客戶期數上限為 ${maxTerm} 期。`);
+        return;
         }
       }
 
