@@ -10,7 +10,7 @@
 
   const LEXUS_NOMINAL_RATE = 0.03695;
   const DLR_RATIO = 0.7;
-  const HOTAI_PROJECT_CAP_RATIO = 0.2;
+  const HOTAI_RATIO = 0.3;
 
   function calculate(project, request) {
     const loan = toLoanAmount(request);
@@ -26,15 +26,12 @@
     const subsidyAmount = Number(model.subsidyAmount);
     const subsidyTerm = Number(model.subsidyTerm);
 
-    if (!Number.isFinite(subsidyAmount) || subsidyAmount <= 0 || !Number.isFinite(subsidyTerm) || subsidyTerm <= 0) {
+    if (!Number.isFinite(subsidyAmount) || subsidyAmount <= 0 ||
+        !Number.isFinite(subsidyTerm) || subsidyTerm <= 0) {
       throw new Error("此車款目前未設定零利率專案。");
     }
 
-    const planMeta = calculatePlanMeta({
-      subsidyAmount,
-      subsidyTerm
-    });
-
+    const planMeta = calculatePlanMeta({ subsidyAmount, subsidyTerm });
     const result = calculateResultByLoanAndTerm(loan, term, planMeta);
 
     return {
@@ -57,7 +54,6 @@
   function calculatePlanMeta(plan) {
     const subsidyAmount = Number(plan.subsidyAmount);
     const subsidyTerm = Number(plan.subsidyTerm);
-
     const zeroMonthly = subsidyAmount / subsidyTerm;
 
     const interestMonthly = Finance.PMT(
@@ -71,11 +67,8 @@
       -2
     );
 
-    const dlrSubsidyCap = Finance.ROUNDDOWN(totalSubsidy * DLR_RATIO, -2);
-    const hotaiProjectCap = Finance.ROUNDUP(
-      (interestMonthly - zeroMonthly) * subsidyTerm,
-      -2
-    ) * HOTAI_PROJECT_CAP_RATIO;
+    const dlrSubsidyCap = totalSubsidy * DLR_RATIO;
+    const hotaiSubsidyCap = totalSubsidy * HOTAI_RATIO;
 
     const baseIrr = Finance.RATE(
       subsidyTerm,
@@ -91,15 +84,18 @@
       zeroMonthly,
       totalSubsidy,
       dlrSubsidyCap,
-      hotaiProjectCap,
+      hotaiSubsidyCap,
       systemIrr
     };
   }
 
   function calculateResultByLoanAndTerm(loan, term, meta) {
-    const monthlyPayment = Finance.PMT(0, term, -loan);
+    const monthlyPayment = Finance.ROUNDUP(
+      Finance.PMT(0, term, -loan),
+      0
+    );
 
-    const totalSubsidy = Finance.ROUND(
+    const totalSubsidy = Finance.ROUNDUP(
       -(
         Finance.PV(
           meta.systemIrr / 12,
@@ -110,8 +106,12 @@
       -2
     );
 
-    const dlrBurden = totalSubsidy;
-    const minDlrSubsidy = Math.min(dlrBurden, meta.dlrSubsidyCap);
+    const hotaiSubsidy = Math.min(
+      totalSubsidy * HOTAI_RATIO,
+      meta.hotaiSubsidyCap
+    );
+
+    const dlrBurden = totalSubsidy - hotaiSubsidy;
 
     const irr2 = Finance.RATE(
       term,
@@ -119,13 +119,21 @@
       -loan + dlrBurden
     ) * 12;
 
+    const minDlrSubsidy =
+      dlrBurden <= meta.dlrSubsidyCap
+        ? dlrBurden
+        : meta.dlrSubsidyCap;
+
     const maxMonthlyPayment =
       dlrBurden <= meta.dlrSubsidyCap
         ? monthlyPayment
-        : Finance.PMT(
-            irr2 / 12,
-            term,
-            -loan + minDlrSubsidy
+        : Finance.ROUNDUP(
+            Finance.PMT(
+              irr2 / 12,
+              term,
+              -loan + minDlrSubsidy
+            ),
+            0
           );
 
     const customerRate = Finance.ROUND(
