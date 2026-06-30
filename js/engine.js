@@ -255,6 +255,13 @@
 
     return [];
   }
+  function calculateLexus(project, request) {
+    if (!global.LexusProject || typeof global.LexusProject.calculate !== "function") {
+      throw new Error("LEXUS公式尚未載入，請確認 js/projects/lexus.js 已正確載入。");
+    }
+
+    return global.LexusProject.calculate(project, request);
+  }
 
   function calculate(project, request) {
     if (!project) {
@@ -264,14 +271,17 @@
     if (project.type === "toyota_zero_interest") {
       return calculateToyota(project, request);
     }
-
+    if (project.type === "lexus_zero_interest") {
+      return calculateLexus(project, request);
+    }
     return calculateStandard(project, request);
   }
 
   global.LoanEngine = {
     calculate,
     calculateStandard,
-    calculateToyota
+    calculateToyota,
+    calculateLexus
   };
 
 })(typeof window !== "undefined" ? window : globalThis);

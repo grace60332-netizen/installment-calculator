@@ -6,6 +6,9 @@
 (function (global) {
   "use strict";
 
+  function isZeroInterestProject(project) {
+    return project?.type === "toyota_zero_interest" || project?.type === "lexus_zero_interest";
+  }
   function renderApp(root, data, projects) {
     root.innerHTML = `
       <div class="app-layout">
@@ -65,15 +68,16 @@
     const box = document.getElementById("dynamicFields");
     const hint = document.getElementById("projectHint");
 
-    if (project.type === "toyota_zero_interest") {
-      hint.textContent = "請選擇車型，系統會自動帶出該車型目前設定的補助金額與期數。";
+    if (isZeroInterestProject(project)) {
+      const modelLabel = project.modelSelectorLabel || "車型";
+      hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的補助金額與期數。`;
 
       const models = project.models || [];
 
       box.innerHTML = `
         <div class="dynamic-grid full-span">
           <div class="field full-span">
-            <label for="toyotaModel">車型</label>
+            <label for="toyotaModel">${escapeHtml(modelLabel)}</label>
             <select id="toyotaModel">
               ${models.map(model => `
                 <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
@@ -157,7 +161,7 @@
       <div>實際金額：<strong>${formatMoney(loanAmount)}</strong></div>
     `;
 
-    if (project.type === "toyota_zero_interest") {
+    if (isZeroInterestProject(project)) {
       const model = (project.models || []).find(p => p.id === modelId);
       const subsidyAmount = Number(model?.subsidyAmount);
       const subsidyTerm = Number(model?.subsidyTerm);

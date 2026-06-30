@@ -143,6 +143,21 @@
         { "id": "crown", "name": "CROWN", "subsidyAmount": 0, "subsidyTerm": 0 },
         { "id": "sienna", "name": "SIENNA", "subsidyAmount": 0, "subsidyTerm": 0 }
       ]
+    },
+    {
+      "id": "lexus_zero_interest",
+      "name": "LEXUS零利率專案",
+      "type": "lexus_zero_interest",
+      "enabled": true,
+      "modelSelectorLabel": "車款",
+      "termInputLabel": "客戶期數",
+      "loanInputLabel": "客戶貸款金額",
+      "maxTerm": 60,
+      "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
+      "models": [
+        { "id": "rx", "name": "RX", "subsidyAmount": 2000000, "subsidyTerm": 40 },
+        { "id": "nx", "name": "NX", "subsidyAmount": 1000000, "subsidyTerm": 40 }
+      ]
     }
   ]
 }   

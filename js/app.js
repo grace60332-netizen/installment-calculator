@@ -11,6 +11,9 @@
     projects: [],
     currentProject: null
   };
+  function isZeroInterestProject(project) {
+    return project?.type === "toyota_zero_interest" || project?.type === "lexus_zero_interest";
+  }
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -83,7 +86,7 @@
         return;
       }
 
-      if (project.type !== "toyota_zero_interest") {
+      if (!isZeroInterestProject(project)) {
         const min = state.data.defaultLoanWanMin || 100;
         const max = project.maxLoanWan || state.data.defaultLoanWanMax || 500;
 
@@ -100,7 +103,7 @@
         }
       }
 
-      if (project.type === "toyota_zero_interest") {
+      if (isZeroInterestProject(project)) {
         modelId = document.getElementById("toyotaModel")?.value || null;
         const model = (project.models || []).find(item => item.id === modelId);
 
@@ -120,8 +123,8 @@
         const maxTerm = project.maxTerm || 60;
 
         if (term > maxTerm) {
-          UI.showNotice(`TOYOTA零利率專案的客戶期數上限為 ${maxTerm} 期。`);
-          UI.renderEmpty(`TOYOTA零利率專案的客戶期數上限為 ${maxTerm} 期。`);
+          UI.showNotice(`${project.name} 的客戶期數上限為 ${maxTerm} 期。`);
+          UI.renderEmpty(`${project.name} 的客戶期數上限為 ${maxTerm} 期。`);
         return;
         }
       }
@@ -149,7 +152,7 @@
 
     document.getElementById("loanWan").value = 100;
 
-    if (project.type === "toyota_zero_interest") {
+    if (isZeroInterestProject(project)) {
       const term = document.getElementById("loanTerm");
       const model = document.getElementById("toyotaModel");
 
@@ -161,5 +164,6 @@
 
     calculate();
   }
+
 
 })();
