@@ -73,7 +73,7 @@
         months
       });
 
-      subsidy = Math.max(0, Finance.ROUNDUP(subsidy, 0));
+      subsidy = Math.max(0, Finance.ROUNDUP(subsidy, 1));
       actualDisbursement = Finance.ROUNDUP(loan - subsidy, 0);
     }
 
