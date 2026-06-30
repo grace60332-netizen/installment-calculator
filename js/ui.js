@@ -6,60 +6,60 @@
 (function (global) {
   "use strict";
 
-function renderApp(root, data, projects) {
-  root.innerHTML = `
-    <div class="app-layout">
-      <aside class="sidebar">
-        <div class="sidebar-title">分期試算工具</div>
+  function renderApp(root, data, projects) {
+    root.innerHTML = `
+      <div class="app-layout">
+        <aside class="sidebar">
+          <div class="sidebar-title">分期試算工具</div>
 
-        <nav class="sidebar-nav">
-          <a href="index.html" class="active">專案試算</a>
-          <a href="car-loan.html">車貸補貼息試算</a>
-          <a href="admin.html">管理後台</a>
-        </nav>
-      </aside>
+          <nav class="sidebar-nav">
+            <a href="index.html" class="active">專案試算</a>
+            <a href="car-loan.html">車貸補貼息試算</a>
+            <a href="admin.html">管理後台</a>
+          </nav>
+        </aside>
 
-      <main class="main-content">
-        <div class="wrap">
-          <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
-          <p class="subtitle">
-            請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
-          </p>
+        <main class="main-content">
+          <div class="wrap">
+            <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
+            <p class="subtitle">
+              請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
+            </p>
 
-          <div class="card">
-            <div class="grid">
-              <div class="field">
-                <label for="projectSelect">選擇專案</label>
-                <select id="projectSelect">
-                  ${projects.map(p => `
-                    <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>
-                  `).join("")}
-                </select>
-                <small id="projectHint"></small>
+            <div class="card">
+              <div class="grid">
+                <div class="field">
+                  <label for="projectSelect">選擇專案</label>
+                  <select id="projectSelect">
+                    ${projects.map(p => `
+                      <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>
+                    `).join("")}
+                  </select>
+                  <small id="projectHint"></small>
+                </div>
+
+                <div id="dynamicFields" class="full-span"></div>
               </div>
 
-              <div id="dynamicFields" class="full-span"></div>
+              <div class="actions">
+                <button id="calcBtn" type="button">立即試算</button>
+                <button id="resetBtn" type="button" class="ghost">重設</button>
+              </div>
+
+              <div id="notice" class="notice"></div>
+              <div id="summary" class="meta"></div>
             </div>
 
-            <div class="actions">
-              <button id="calcBtn" type="button">立即試算</button>
-              <button id="resetBtn" type="button" class="ghost">重設</button>
-            </div>
-
-            <div id="notice" class="notice"></div>
-            <div id="summary" class="meta"></div>
-          </div>
-
-          <div class="card">
-            <div id="resultArea" class="table-wrap">
-              <div class="empty">請先輸入資料。</div>
+            <div class="card">
+              <div id="resultArea" class="table-wrap">
+                <div class="empty">請先輸入資料。</div>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
-  `;
-}
+        </main>
+      </div>
+    `;
+  }
 
   function renderDynamicFields(project, data) {
     const box = document.getElementById("dynamicFields");
@@ -71,6 +71,15 @@ function renderApp(root, data, projects) {
       const enabledModels = (project.models || []).filter(model => model.enabled !== false);
       const plans = project.plans || [];
 
+      if (!enabledModels.length) {
+        box.innerHTML = `
+          <div class="empty full-span">
+            目前尚未設定可用車型。請至管理後台新增或啟用 TOYOTA 車型。
+          </div>
+        `;
+        return;
+      }
+
       box.innerHTML = `
         <div class="dynamic-grid full-span">
           <div class="field full-span">
@@ -80,7 +89,7 @@ function renderApp(root, data, projects) {
                 <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
               `).join("")}
             </select>
-            <small>每個車型會自動對應目前設定的適用專案。</small>
+            <small>每個車型會自動對應目前設定的零利率條件。</small>
           </div>
 
           <div class="field full-span">
@@ -106,16 +115,7 @@ function renderApp(root, data, projects) {
         </div>
       `;
 
-      global.UI = {
-        renderApp,
-        renderDynamicFields,
-        renderSummary,
-        renderResult,
-        renderEmpty,
-        showNotice,
-        clearNotice,
-        syncToyotaPlanFromModel
-      };
+      syncToyotaPlanFromModel(project);
       return;
     }
 
@@ -142,7 +142,7 @@ function renderApp(root, data, projects) {
     const planSelect = document.getElementById("toyotaPlan");
     const hint = document.getElementById("toyotaPlanHint");
 
-    if (!modelSelect || !planSelect) return;
+    if (!modelSelect || !planSelect) return null;
 
     const model = (project.models || []).find(item => item.id === modelSelect.value);
     const plan = (project.plans || []).find(item => item.id === model?.planId);
@@ -150,12 +150,14 @@ function renderApp(root, data, projects) {
     if (plan) {
       planSelect.value = plan.id;
       if (hint) hint.textContent = `目前車型適用：${plan.name}`;
-    } else {
-      planSelect.value = "";
-      if (hint) hint.textContent = "此車型目前未設定適用零利率專案。";
+      return plan.id;
     }
-}
-  
+
+    planSelect.value = "";
+    if (hint) hint.textContent = "此車型目前未設定適用零利率專案。";
+    return null;
+  }
+
   function renderSummary(project, loanWan, term, planId) {
     const summary = document.getElementById("summary");
     const loanAmount = Math.round(Number(loanWan) * 10000);
@@ -178,7 +180,7 @@ function renderApp(root, data, projects) {
       `;
     }
 
-  summary.innerHTML = html;
+    summary.innerHTML = html;
   }
 
   function renderResult(result) {
@@ -260,7 +262,8 @@ function renderApp(root, data, projects) {
     renderResult,
     renderEmpty,
     showNotice,
-    clearNotice
+    clearNotice,
+    syncToyotaPlanFromModel
   };
 
 })(typeof window !== "undefined" ? window : globalThis);

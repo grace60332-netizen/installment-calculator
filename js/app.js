@@ -6,8 +6,6 @@
 (function () {
   "use strict";
 
-  const DATA_PATH = "data/projects.json";
-
   const state = {
     data: null,
     projects: [],
@@ -80,6 +78,11 @@
       const term = Number(document.getElementById("loanTerm")?.value);
       let planId = document.getElementById("toyotaPlan")?.value || null;
 
+      if (!Number.isFinite(loanWan)) {
+        UI.renderEmpty("請輸入貸款金額。");
+        return;
+      }
+
       if (project.type === "toyota_zero_interest") {
         const modelId = document.getElementById("toyotaModel")?.value || null;
         const model = (project.models || []).find(item => item.id === modelId);
@@ -96,11 +99,12 @@
         }
 
         planId = model.planId;
-      }
+        document.getElementById("toyotaPlan").value = planId;
 
-      if (!Number.isFinite(loanWan)) {
-        UI.renderEmpty("請輸入貸款金額。");
-        return;
+        if (!Number.isFinite(term) || term <= 0) {
+          UI.renderEmpty("請輸入期數。");
+          return;
+        }
       }
 
       if (project.type !== "toyota_zero_interest") {
@@ -110,13 +114,6 @@
         if (loanWan < min || loanWan > max) {
           UI.showNotice(`貸款金額請輸入 ${min}～${max} 萬。`);
           UI.renderEmpty(`貸款金額請輸入 ${min}～${max} 萬。`);
-          return;
-        }
-      }
-
-      if (project.type === "toyota_zero_interest") {
-        if (!Number.isFinite(term) || term <= 0) {
-          UI.renderEmpty("請輸入期數。");
           return;
         }
       }
@@ -142,7 +139,8 @@
     const project = state.currentProject;
     if (!project) return;
 
-    document.getElementById("loanWan").value = 100;
+    const loanWan = document.getElementById("loanWan");
+    if (loanWan) loanWan.value = 100;
 
     if (project.type === "toyota_zero_interest") {
       const term = document.getElementById("loanTerm");
