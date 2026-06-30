@@ -245,6 +245,11 @@
   }
 
   function renderToyotaModelRow(model, index) {
+    const amount = Number(model.subsidyAmount || 0);
+    const term = Number(model.subsidyTerm || 0);
+    const isActive = amount > 0 && term > 0;
+    const projectName = isActive ? `${amount / 10000}萬/${term}期` : "-";
+
     return `
       <div class="toyota-model-row">
         <div class="field">
@@ -258,12 +263,21 @@
         </div>
 
         <div class="field">
+          <label>適用專案</label>
+          <input
+            type="text"
+            value="${escapeAttr(projectName)}"
+            disabled
+          >
+        </div>
+
+        <div class="field">
           <label>金額</label>
           <input
             type="number"
             class="toyota-model-amount"
             data-index="${index}"
-            value="${Number(model.subsidyAmount || 0)}"
+            value="${amount}"
           >
         </div>
 
@@ -273,14 +287,14 @@
             type="number"
             class="toyota-model-term"
             data-index="${index}"
-            value="${Number(model.subsidyTerm || 0)}"
+            value="${term}"
           >
         </div>
 
         <div class="toyota-model-status">
-          ${Number(model.subsidyAmount) > 0 && Number(model.subsidyTerm) > 0
-            ? `<span class="status-pill active">適用</span>`
-            : `<span class="status-pill inactive">不適用</span>`
+          ${isActive
+            ? `<span class="status-pill active">啟用</span>`
+            : `<span class="status-pill inactive">無適用專案</span>`
           }
         </div>
 

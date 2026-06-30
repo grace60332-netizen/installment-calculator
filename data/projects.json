@@ -130,7 +130,7 @@
         { "id": "altis_gas", "name": "ALTIS 汽油", "subsidyAmount": 800000, "subsidyTerm": 50 },
         { "id": "vios", "name": "VIOS", "subsidyAmount": 400000, "subsidyTerm": 30 },
         { "id": "corolla_cross_gas", "name": "COROLLA CROSS 汽油", "subsidyAmount": 700000, "subsidyTerm": 40 },
-        { "id": "corolla_cross_hybrid", "name": "COROLLA CROSS 油電", "subsidyAmount": 700000, "subsidyTerm": 40 },
+        { "id": "corolla_cross_hybrid", "name": "COROLLA CROSS 油電", "subsidyAmount": 500000, "subsidyTerm": 30 },
         { "id": "town_ace_pu", "name": "TOWN ACE PU", "subsidyAmount": 500000, "subsidyTerm": 50 },
         { "id": "town_ace_van", "name": "TOWN ACE VAN", "subsidyAmount": 500000, "subsidyTerm": 50 },
         { "id": "yaris_cross", "name": "YARIS CROSS", "subsidyAmount": 600000, "subsidyTerm": 40 },
@@ -139,3 +139,5 @@
         { "id": "sienna", "name": "SIENNA", "subsidyAmount": 0, "subsidyTerm": 0 }
       ]
     }
+  ]
+}   
