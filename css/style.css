@@ -70,11 +70,10 @@ body {
   color: #fff;
 }
 
-/* 管理後台入口低調放左下 */
 .sidebar-nav a[href="admin.html"] {
   margin-top: auto;
   font-size: 13px;
-  opacity: 0.55;
+  opacity: 0.5;
   background: transparent;
 }
 
@@ -220,46 +219,66 @@ button.ghost:hover,
   color: var(--text);
 }
 
-.table-wrap{
-    width:100%;
-    overflow-x:hidden;
+.table-wrap {
+  width: 100%;
+  overflow-x: hidden;
 }
 
-table{
-    width:100%;
-    table-layout:fixed;
-    border-collapse:collapse;
+.compare-table-wrap {
+  width: 100%;
+  overflow-x: hidden;
 }
 
-.compare-table th:first-child{
-    width:26%;
-}
-
-.compare-table th:not(:first-child),
-.compare-table td{
-    width:auto;
+table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
 th,
-td{
-    padding:14px 12px;
-    border-bottom:1px solid var(--line);
-
-    white-space:normal;
-    word-break:break-word;
-    overflow-wrap:anywhere;
+td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
 th {
   background: #f8fafc;
-  font-weight: 900;
+  font-weight: 950;
+}
+
+td {
+  text-align: right;
+  font-weight: 700;
 }
 
 th:first-child,
-td:first-child{
-    width:22%;
-    text-align:left;
-    font-weight:700;
+td:first-child {
+  text-align: left;
+  font-weight: 900;
+}
+
+.compare-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.compare-table th:first-child {
+  width: 24%;
+}
+
+.compare-table th:not(:first-child),
+.compare-table td:not(:first-child) {
+  width: auto;
+}
+
+.compare-table tbody th {
+  background: #fff;
+  color: var(--muted);
 }
 
 .empty {
@@ -269,19 +288,6 @@ td:first-child{
   font-weight: 800;
 }
 
-.compare-table{
-    width:100%;
-    table-layout:fixed;
-}
-
-.compare-table tbody th {
-  background: #fff;
-  color: var(--muted);
-  font-weight: 900;
-  text-align: left;
-}
-
-/* 單筆結果卡片：TOYOTA / LEXUS 類 */
 .result-card-list {
   display: flex;
   flex-direction: column;
@@ -315,9 +321,10 @@ td:first-child{
 .result-card-value {
   font-weight: 950;
   text-align: right;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-/* 手機版：側欄改上方橫向選單 */
 @media (max-width: 860px) {
   .app-layout {
     display: block;
@@ -381,83 +388,59 @@ td:first-child{
     flex: 1;
   }
 
-  table {
-    min-width: 0;
+  .result-card-row {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .result-card-shell {
+    padding: 12px;
   }
 
   th,
   td {
-    padding: 13px 10px;
-    font-size: 14px;
-  }
-
-  .result-card-row {
-    padding: 14px;
-  }
-  
-}
-.compare-card-list {
-  display: none;
-}
-
-
-
-@media (max-width: 768px) {
-  .compare-table-wrap {
-    display: none;
-  }
-
-  .compare-card-list{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-  }
-}
-@media (min-width: 769px) {
-  .compare-table-wrap {
-    display: block;
-  }
-
-  .compare-card-list {
-    display: none;
-  }
-}
-.compare-card-list {
-  display: none;
-}
-
-/* 手機也維持利率橫向比較表 */
-.compare-table-wrap {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-.compare-table {
-  width: 100%;
-  table-layout: fixed;
-}
-
-@media (max-width: 768px) {
-  .compare-table {
-    font-size: 12px;
-  }
-
-  .compare-table th,
-  .compare-table td {
     padding: 10px 4px;
+    font-size: clamp(9px, 2.45vw, 12px);
     line-height: 1.35;
-    word-break: break-word;
-    overflow-wrap: anywhere;
   }
 
-  .compare-table th:first-child,
-  .compare-table td:first-child {
-    width: 24%;
+  .compare-table th:first-child {
+    width: 22%;
   }
 
   .compare-table th:not(:first-child),
   .compare-table td:not(:first-child) {
-    width: auto;
-    text-align: right;
+    font-size: clamp(8.5px, 2.35vw, 11.5px);
+  }
+
+  .compare-table td {
+    letter-spacing: -0.04em;
+  }
+
+  .compare-table th {
+    letter-spacing: -0.02em;
+  }
+
+  .table-wrap,
+  .compare-table-wrap {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 390px) {
+  th,
+  td {
+    padding: 9px 3px;
+    font-size: 9px;
+  }
+
+  .compare-table th:first-child {
+    width: 21%;
+  }
+
+  .compare-table th:not(:first-child),
+  .compare-table td:not(:first-child) {
+    font-size: 8.5px;
   }
 }
