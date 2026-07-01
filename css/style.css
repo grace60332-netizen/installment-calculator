@@ -227,7 +227,28 @@ button.ghost:hover,
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  table-layout: auto;
+  min-width: 0;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.compare-table th,
+.compare-table td {
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.compare-table th:first-child {
+  width: 32%;
+}
+
+.compare-table th:not(:first-child),
+.compare-table td {
+  width: 34%;
 }
 
 th,
