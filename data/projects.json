@@ -151,6 +151,7 @@
       "enabled": true,
       "modelSelectorLabel": "車款",
       "termInputLabel": "客戶期數",
+      "maxTerm": 60,
       "loanInputLabel": "客戶貸款金額",
       "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
       "models": [
