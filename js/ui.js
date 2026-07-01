@@ -186,81 +186,64 @@
     summary.innerHTML = html;
   }
 
-  function renderResult(result) {
-    if (!result || !result.columns || !result.rows) {
-      renderEmpty("沒有可顯示的結果。");
+  function renderCompareResult(result) {
+    if (window.innerWidth <= 768) {
+      renderCompareCards(result);
       return;
     }
 
-    if (
-      ["haoxiang", "lexiang", "legou"].includes(result.projectId) &&
-      result.rows.length > 1
-    ) {
-      renderCompareResult(result);
-      return;
-    }
-    if (
-      ["toyota_zero_interest", "lexus_zero_interest", "toyota_low_interest_188"].includes(result.projectId)
-    ) {
-      renderSingleResultCard(result);
-      return;
-    }
+    const rateColumn = result.columns.find(col => col.key === "customerRate");
+    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
 
     document.getElementById("resultArea").innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            ${result.columns.map(col => `<th>${escapeHtml(col.label)}</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${result.rows.map(row => `
+      <div class="compare-table-wrap">
+        <table class="compare-table">
+          <thead>
             <tr>
-              ${result.columns.map(col => `<td>${formatCell(row[col.key], col.type)}</td>`).join("")}
+              <th>利率</th>
+              ${result.rows.map(row => `
+                <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
+              `).join("")}
             </tr>
-          `).join("")}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            ${compareColumns.map(col => `
+              <tr>
+                <th>${escapeHtml(col.label)}</th>
+                ${result.rows.map(row => `
+                  <td>${formatCell(row[col.key], col.type)}</td>
+                `).join("")}
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
-  function renderCompareCards(result){
+  function renderCompareCards(result) {
+    const rateColumn = result.columns.find(col => col.key === "customerRate");
+    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
 
-      const rateColumn =
-          result.columns.find(c=>c.key==="customerRate");
-
-      const columns =
-          result.columns.filter(c=>c.key!=="customerRate");
-
-      document.getElementById("resultArea").innerHTML =
-
-          result.rows.map(row=>`
-
+    document.getElementById("resultArea").innerHTML = `
+      <div class="compare-card-list">
+        ${result.rows.map(row => `
           <div class="compare-card">
+            <div class="compare-card-title">
+              ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
+            </div>
 
-              <div class="compare-card-title">
-                  ${formatCell(row.customerRate,rateColumn.type)}
+            ${compareColumns.map(col => `
+              <div class="compare-card-row">
+                <div class="compare-card-label">${escapeHtml(col.label)}</div>
+                <div class="compare-card-value">${formatCell(row[col.key], col.type)}</div>
               </div>
-
-              ${columns.map(col=>`
-
-                  <div class="compare-item">
-
-                      <div class="compare-label">
-                          ${escapeHtml(col.label)}
-                      </div>
-
-                      <div class="compare-value">
-                          ${formatCell(row[col.key],col.type)}
-                      </div>
-
-                  </div>
-
-              `).join("")}
-
+            `).join("")}
           </div>
-
-      `).join("");
+        `).join("")}
+      </div>
+    `;
   }
   function renderSingleResultCard(result) {
      const row = result.rows[0];
