@@ -18,7 +18,7 @@
     root.innerHTML = `
       <div class="app-layout">
         <aside class="sidebar">
-          <div class="sidebar-title">分期試算工具</div>
+          <div class="sidebar-title">分期方案試算平台</div>
 
           <nav class="sidebar-nav">
             <a href="index.html" class="active">專案試算</a>
@@ -29,7 +29,7 @@
 
         <main class="main-content">
           <div class="wrap">
-            <h1 class="title">${escapeHtml(data.appTitle || "分期試算工具")}</h1>
+            <h1 class="title">${escapeHtml(data.appTitle || "分期方案試算平台")}</h1>
             <p class="subtitle">
               請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
             </p>
@@ -233,7 +233,7 @@
         <table class="compare-table">
           <thead>
             <tr>
-              <th>欄位名稱 / 利率</th>
+              <th>利率</th>
               ${result.rows.map(row => `
                 <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
               `).join("")}
