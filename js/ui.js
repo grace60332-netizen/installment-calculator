@@ -228,11 +228,7 @@
       <div class="compare-table-wrap">
         ${renderCompareTable(result)}
       </div>
-
-      <div class="compare-card-list">
-        ${renderCompareCardsHtml(result)}
-      </div>
-    `;
+      `;
   }
 
   function renderCompareTable(result) {
