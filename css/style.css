@@ -395,22 +395,32 @@ td:first-child {
 
 @media (max-width: 768px) {
   .result-card-shell {
-    padding: 16px;
+    padding: 14px;
+  }
+
+  .compare-table {
+    table-layout: fixed;
   }
 
   th,
   td {
-    padding: 13px 8px;
+    padding: 12px 4px;
     font-size: 15px;
     line-height: 1.45;
   }
 
-  .compare-table th:first-child {
-    width: 30%;
+  .compare-table th:first-child,
+  .compare-table td:first-child {
+    width: 18%;
+    padding-left: 6px;
+    padding-right: 2px;
   }
 
   .compare-table th:not(:first-child),
   .compare-table td:not(:first-child) {
+    width: 41%;
+    padding-left: 2px;
+    padding-right: 6px;
     font-size: 15px;
   }
 
@@ -426,16 +436,18 @@ td:first-child {
 @media (max-width: 390px) {
   th,
   td {
-    padding: 12px 6px;
+    padding: 11px 3px;
     font-size: 14px;
   }
 
-  .compare-table th:first-child {
-    width: 30%;
+  .compare-table th:first-child,
+  .compare-table td:first-child {
+    width: 19%;
   }
 
   .compare-table th:not(:first-child),
   .compare-table td:not(:first-child) {
+    width: 40.5%;
     font-size: 14px;
   }
 }
