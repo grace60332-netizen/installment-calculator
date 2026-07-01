@@ -224,35 +224,43 @@
     `;
   }
 
-  function renderCompareResult(result) {
-    const rateColumn = result.columns.find(col => col.key === "customerRate");
-    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+  function renderCompareCards(result){
 
-    document.getElementById("resultArea").innerHTML = `
-      <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>利率</th>
-              ${result.rows.map(row => `
-                <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
+      const rateColumn =
+          result.columns.find(c=>c.key==="customerRate");
+
+      const columns =
+          result.columns.filter(c=>c.key!=="customerRate");
+
+      document.getElementById("resultArea").innerHTML =
+
+          result.rows.map(row=>`
+
+          <div class="compare-card">
+
+              <div class="compare-card-title">
+                  ${formatCell(row.customerRate,rateColumn.type)}
+              </div>
+
+              ${columns.map(col=>`
+
+                  <div class="compare-item">
+
+                      <div class="compare-label">
+                          ${escapeHtml(col.label)}
+                      </div>
+
+                      <div class="compare-value">
+                          ${formatCell(row[col.key],col.type)}
+                      </div>
+
+                  </div>
+
               `).join("")}
-            </tr>
-          </thead>
 
-          <tbody>
-            ${compareColumns.map(col => `
-              <tr>
-                <th>${escapeHtml(col.label)}</th>
-                ${result.rows.map(row => `
-                  <td>${formatCell(row[col.key], col.type)}</td>
-                `).join("")}
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
+          </div>
+
+      `).join("");
   }
   function renderSingleResultCard(result) {
      const row = result.rows[0];

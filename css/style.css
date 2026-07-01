@@ -394,4 +394,61 @@ td:first-child{
   .result-card-row {
     padding: 14px;
   }
+  
+}
+.compare-card-list {
+  display: none;
+}
+
+.compare-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.compare-card-title {
+  padding: 16px 18px;
+  background: #f8fafc;
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 950;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-card-row:last-child {
+  border-bottom: 0;
+}
+
+.compare-card-label {
+  color: var(--muted);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.compare-card-value {
+  color: var(--text);
+  font-weight: 950;
+  text-align: right;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .compare-table-wrap {
+    display: none;
+  }
+
+  .compare-card-list {
+    display: block;
+  }
 }
