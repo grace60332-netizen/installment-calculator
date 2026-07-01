@@ -450,4 +450,49 @@ td:first-child {
     width: 40.5%;
     font-size: 14px;
   }
+
+  .compare-table-zhonggu th,
+  .compare-table-zhonggu td {
+    padding: 9px 1px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  .compare-table-zhonggu th:first-child,
+  .compare-table-zhonggu td:first-child {
+    width: 13%;
+    font-size: 10px;
+  }
+
+  .compare-table-zhonggu th:not(:first-child),
+  .compare-table-zhonggu td:not(:first-child) {
+    width: 14.5%;
+    font-size: 9.5px;
+    letter-spacing: -0.05em;
+  }
+}
+@media (max-width: 768px) {
+  .compare-table-zhonggu th,
+  .compare-table-zhonggu td {
+    padding: 10px 2px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .compare-table-zhonggu th:first-child,
+  .compare-table-zhonggu td:first-child {
+    width: 14%;
+    padding-left: 4px;
+    padding-right: 2px;
+    font-size: 11px;
+  }
+
+  .compare-table-zhonggu th:not(:first-child),
+  .compare-table-zhonggu td:not(:first-child) {
+    width: 14.3%;
+    padding-left: 1px;
+    padding-right: 1px;
+    font-size: 10.5px;
+    letter-spacing: -0.04em;
+  }
 }

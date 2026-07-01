@@ -1,9 +1,10 @@
 /**
  * js/ui.js
  * 專門負責畫面渲染
- * - 豪享／樂享／樂購／中古尊榮：利率橫向比較表
- * - 手機版仍維持橫向比較表，但自動壓縮到頁面寬度
- * - TOYOTA／LEXUS／1.88%：欄位／值卡片
+ * 重構版：
+ * - 桌機：豪享／樂享／樂購顯示利率比較表
+ * - 手機：豪享／樂享／樂購自動改成一個利率一張卡
+ * - TOYOTA／LEXUS／1.88%：一律顯示欄位／值卡片
  */
 
 (function (global) {
@@ -18,7 +19,7 @@
   }
 
   function isCompareProject(projectId) {
-    return ["haoxiang", "lexiang", "legou", "zhonggu"].includes(projectId);
+    return ["haoxiang", "lexiang", "legou"].includes(projectId);
   }
 
   function renderApp(root, data, projects) {
@@ -63,7 +64,7 @@
               <div id="summary" class="meta"></div>
             </div>
 
-            <div class="card result-card-shell">
+            <div class="card">
               <div id="resultArea" class="table-wrap">
                 <div class="empty">請先輸入資料。</div>
               </div>
@@ -227,7 +228,7 @@
       <div class="compare-table-wrap">
         ${renderCompareTable(result)}
       </div>
-    `;
+      `;
   }
 
   function renderCompareTable(result) {
@@ -235,7 +236,7 @@
     const compareColumns = result.columns.filter(col => col.key !== "customerRate");
 
     return `
-      <table class="compare-table">
+      <table class="compare-table compare-table-${escapeHtml(result.projectId)}">
         <thead>
           <tr>
             <th>利率</th>
@@ -257,6 +258,29 @@
         </tbody>
       </table>
     `;
+  }
+
+  function renderCompareCardsHtml(result) {
+    const rateColumn = result.columns.find(col => col.key === "customerRate");
+    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+
+    return compareColumns.map(col => `
+      <div class="mobile-compare-block">
+        <div class="mobile-compare-title">${escapeHtml(col.label)}</div>
+
+        ${result.rows.map(row => `
+          <div class="mobile-compare-row">
+            <div class="mobile-compare-rate">
+              ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
+            </div>
+            <div class="mobile-compare-value">
+              ${formatCell(row[col.key], col.type)}
+            </div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
   }
 
   function renderResultCards(result) {
