@@ -268,20 +268,23 @@
     const rateColumn = result.columns.find(col => col.key === "customerRate");
     const compareColumns = result.columns.filter(col => col.key !== "customerRate");
 
-    return result.rows.map(row => `
-      <div class="compare-card">
-        <div class="compare-card-title">
-          ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
-        </div>
+    return compareColumns.map(col => `
+      <div class="mobile-compare-block">
+        <div class="mobile-compare-title">${escapeHtml(col.label)}</div>
 
-        ${compareColumns.map(col => `
-          <div class="compare-card-row">
-            <div class="compare-card-label">${escapeHtml(col.label)}</div>
-            <div class="compare-card-value">${formatCell(row[col.key], col.type)}</div>
+        ${result.rows.map(row => `
+          <div class="mobile-compare-row">
+            <div class="mobile-compare-rate">
+              ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
+            </div>
+            <div class="mobile-compare-value">
+              ${formatCell(row[col.key], col.type)}
+            </div>
           </div>
-        `).join("")}
-      </div>
-    `).join("");
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
   }
 
   function renderResultCards(result) {

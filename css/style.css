@@ -400,48 +400,7 @@ td:first-child{
   display: none;
 }
 
-.compare-card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
 
-.compare-card-title {
-  padding: 16px 18px;
-  background: #f8fafc;
-  color: var(--primary);
-  font-size: 22px;
-  font-weight: 950;
-  border-bottom: 1px solid var(--line);
-}
-
-.compare-card-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.compare-card-row:last-child {
-  border-bottom: 0;
-}
-
-.compare-card-label {
-  color: var(--muted);
-  font-weight: 900;
-  flex-shrink: 0;
-}
-
-.compare-card-value {
-  color: var(--text);
-  font-weight: 950;
-  text-align: right;
-  word-break: break-word;
-}
 
 @media (max-width: 768px) {
   .compare-table-wrap {
@@ -454,6 +413,76 @@ td:first-child{
     gap:18px;
   }
 }
+@media (min-width: 769px) {
+  .compare-table-wrap {
+    display: block;
+  }
+
+  .compare-card-list {
+    display: none;
+  }
+}
+.compare-card-list {
+  display: none;
+}
+
+.mobile-compare-block {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.mobile-compare-title {
+  padding: 14px 16px;
+  background: #f8fafc;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 950;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-compare-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-compare-row:last-child {
+  border-bottom: 0;
+}
+
+.mobile-compare-rate {
+  color: var(--primary);
+  font-weight: 950;
+  font-size: 16px;
+}
+
+.mobile-compare-value {
+  color: var(--text);
+  font-weight: 950;
+  font-size: 17px;
+  text-align: right;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .compare-table-wrap {
+    display: none;
+  }
+
+  .compare-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
 @media (min-width: 769px) {
   .compare-table-wrap {
     display: block;
