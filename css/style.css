@@ -448,7 +448,18 @@ td:first-child{
     display: none;
   }
 
-  .compare-card-list {
+  .compare-card-list{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+}
+@media (min-width: 769px) {
+  .compare-table-wrap {
     display: block;
+  }
+
+  .compare-card-list {
+    display: none;
   }
 }

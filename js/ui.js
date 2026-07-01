@@ -1,6 +1,10 @@
 /**
  * js/ui.js
  * 專門負責畫面渲染
+ * 重構版：
+ * - 桌機：豪享／樂享／樂購顯示利率比較表
+ * - 手機：豪享／樂享／樂購自動改成一個利率一張卡
+ * - TOYOTA／LEXUS／1.88%：一律顯示欄位／值卡片
  */
 
 (function (global) {
@@ -12,6 +16,10 @@
       "lexus_zero_interest",
       "toyota_low_interest_188"
     ].includes(project?.type);
+  }
+
+  function isCompareProject(projectId) {
+    return ["haoxiang", "lexiang", "legou"].includes(projectId);
   }
 
   function renderApp(root, data, projects) {
@@ -30,17 +38,15 @@
         <main class="main-content">
           <div class="wrap">
             <h1 class="title">${escapeHtml(data.appTitle || "分期方案試算平台")}</h1>
-            <p class="subtitle">
-              請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。
-            </p>
+            <p class="subtitle">請選擇專案並輸入貸款金額。一般專案金額單位為「萬」。</p>
 
             <div class="card">
               <div class="grid">
                 <div class="field">
                   <label for="projectSelect">選擇專案</label>
                   <select id="projectSelect">
-                    ${projects.map(p => `
-                      <option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>
+                    ${projects.map(project => `
+                      <option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>
                     `).join("")}
                   </select>
                   <small id="projectHint"></small>
@@ -73,46 +79,20 @@
     const box = document.getElementById("dynamicFields");
     const hint = document.getElementById("projectHint");
 
+    if (!box || !hint || !project) return;
+
     if (isModelBasedProject(project)) {
-      const modelLabel = project.modelSelectorLabel || "車型";
-      const models = project.models || [];
-
-      hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的適用專案。`;
-
-      box.innerHTML = `
-        <div class="dynamic-grid full-span">
-          <div class="field full-span">
-            <label for="modelSelect">${escapeHtml(modelLabel)}</label>
-            <select id="modelSelect">
-              ${models.map(model => `
-                <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
-              `).join("")}
-            </select>
-            <small>後台可調整每個${escapeHtml(modelLabel)}對應的金額與期數。</small>
-          </div>
-
-          <div class="field full-span">
-            <label>適用專案</label>
-            <input id="modelProjectDisplay" type="text" disabled>
-            <small>此欄位由${escapeHtml(modelLabel)}自動帶入。</small>
-          </div>
-
-          <div class="field">
-            <label for="loanWan">客戶貸款金額（萬）</label>
-            <input id="loanWan" type="number" min="10" max="500" step="0.1" value="100">
-            <small>例如輸入 63.5 代表 635,000 元。</small>
-          </div>
-
-          <div class="field">
-            <label for="loanTerm">客戶期數</label>
-            <input id="loanTerm" type="number" min="1" max="84" step="1" value="30">
-          </div>
-        </div>
-      `;
-
-      syncModelInfo(project);
+      renderModelBasedFields(box, hint, project);
       return;
     }
+
+    renderStandardFields(box, hint, project, data);
+  }
+
+  function renderStandardFields(box, hint, project, data) {
+    const min = project.minLoanWan || data.defaultLoanWanMin || 10;
+    const max = project.maxLoanWan || data.defaultLoanWanMax || 500;
+    const step = data.defaultLoanWanStep || 5;
 
     hint.textContent = "輸入貸款金額後，系統會列出該專案所有利率結果。";
 
@@ -122,42 +102,82 @@
         <input
           id="loanWan"
           type="number"
-          min="${data.defaultLoanWanMin || 10}"
-          max="${project.maxLoanWan || data.defaultLoanWanMax || 500}"
-          step="${data.defaultLoanWanStep || 5}"
+          min="${min}"
+          max="${max}"
+          step="${step}"
           value="100"
         >
-        <small>例如輸入 100 代表 1,000,000 元。</small>
+        <small>例如輸入 100 代表 1,000,000 元。此專案上限為 ${max} 萬。</small>
       </div>
     `;
+  }
+
+  function renderModelBasedFields(box, hint, project) {
+    const modelLabel = project.modelSelectorLabel || "車型";
+    const models = project.models || [];
+
+    hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的適用專案。`;
+
+    box.innerHTML = `
+      <div class="dynamic-grid full-span">
+        <div class="field full-span">
+          <label for="modelSelect">${escapeHtml(modelLabel)}</label>
+          <select id="modelSelect">
+            ${models.map(model => `
+              <option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>
+            `).join("")}
+          </select>
+          <small>後台可調整每個${escapeHtml(modelLabel)}對應的金額與期數。</small>
+        </div>
+
+        <div class="field full-span">
+          <label>適用專案</label>
+          <input id="modelProjectDisplay" type="text" disabled>
+          <small>此欄位由${escapeHtml(modelLabel)}自動帶入。</small>
+        </div>
+
+        <div class="field">
+          <label for="loanWan">客戶貸款金額（萬）</label>
+          <input id="loanWan" type="number" min="10" max="500" step="0.1" value="100">
+          <small>例如輸入 63.5 代表 635,000 元。</small>
+        </div>
+
+        <div class="field">
+          <label for="loanTerm">客戶期數</label>
+          <input id="loanTerm" type="number" min="1" max="84" step="1" value="30">
+        </div>
+      </div>
+    `;
+
+    syncModelInfo(project);
   }
 
   function syncModelInfo(project) {
     const modelSelect = document.getElementById("modelSelect");
     const projectDisplay = document.getElementById("modelProjectDisplay");
 
-    if (!modelSelect) return;
+    if (!modelSelect || !projectDisplay) return;
 
     const model = (project.models || []).find(item => item.id === modelSelect.value);
 
     if (!model) {
-      if (projectDisplay) projectDisplay.value = "";
+      projectDisplay.value = "";
       return;
     }
 
     const amount = Number(model.subsidyAmount);
     const term = Number(model.subsidyTerm);
 
-    if (projectDisplay) {
-      projectDisplay.value =
-        Number.isFinite(amount) && amount > 0 && Number.isFinite(term) && term > 0
-          ? `${formatWanAmount(amount)}萬 / ${term}期`
-          : "無適用專案";
-    }
+    projectDisplay.value =
+      Number.isFinite(amount) && amount > 0 && Number.isFinite(term) && term > 0
+        ? `${formatWanAmount(amount)}萬 / ${term}期`
+        : "無適用專案";
   }
 
   function renderSummary(project, loanWan, term, modelId) {
     const summary = document.getElementById("summary");
+    if (!summary || !project) return;
+
     const loanAmount = Math.round(Number(loanWan) * 10000);
 
     let html = `
@@ -168,7 +188,7 @@
 
     if (isModelBasedProject(project)) {
       const modelLabel = project.modelSelectorLabel || "車型";
-      const model = (project.models || []).find(p => p.id === modelId);
+      const model = (project.models || []).find(item => item.id === modelId);
       const subsidyAmount = Number(model?.subsidyAmount);
       const subsidyTerm = Number(model?.subsidyTerm);
 
@@ -186,58 +206,96 @@
     summary.innerHTML = html;
   }
 
-  function renderCompareResult(result) {
-    if (window.innerWidth <= 768) {
-      renderCompareCards(result);
+  function renderResult(result) {
+    if (!result || !Array.isArray(result.columns) || !Array.isArray(result.rows) || result.rows.length === 0) {
+      renderEmpty("沒有可顯示的結果。");
       return;
     }
 
-    const rateColumn = result.columns.find(col => col.key === "customerRate");
-    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+    if (isCompareProject(result.projectId) && result.rows.length > 1) {
+      renderCompareResult(result);
+      return;
+    }
 
-    document.getElementById("resultArea").innerHTML = `
+    renderResultCards(result);
+  }
+
+  function renderCompareResult(result) {
+    const resultArea = document.getElementById("resultArea");
+    if (!resultArea) return;
+
+    resultArea.innerHTML = `
       <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>利率</th>
-              ${result.rows.map(row => `
-                <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
-              `).join("")}
-            </tr>
-          </thead>
+        ${renderCompareTable(result)}
+      </div>
 
-          <tbody>
-            ${compareColumns.map(col => `
-              <tr>
-                <th>${escapeHtml(col.label)}</th>
-                ${result.rows.map(row => `
-                  <td>${formatCell(row[col.key], col.type)}</td>
-                `).join("")}
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
+      <div class="compare-card-list">
+        ${renderCompareCardsHtml(result)}
       </div>
     `;
   }
 
-  function renderCompareCards(result) {
+  function renderCompareTable(result) {
     const rateColumn = result.columns.find(col => col.key === "customerRate");
     const compareColumns = result.columns.filter(col => col.key !== "customerRate");
 
-    document.getElementById("resultArea").innerHTML = `
-      <div class="compare-card-list">
-        ${result.rows.map(row => `
-          <div class="compare-card">
-            <div class="compare-card-title">
-              ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
-            </div>
+    return `
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>利率</th>
+            ${result.rows.map(row => `
+              <th>${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}</th>
+            `).join("")}
+          </tr>
+        </thead>
 
-            ${compareColumns.map(col => `
-              <div class="compare-card-row">
-                <div class="compare-card-label">${escapeHtml(col.label)}</div>
-                <div class="compare-card-value">${formatCell(row[col.key], col.type)}</div>
+        <tbody>
+          ${compareColumns.map(col => `
+            <tr>
+              <th>${escapeHtml(col.label)}</th>
+              ${result.rows.map(row => `
+                <td>${formatCell(row[col.key], col.type)}</td>
+              `).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderCompareCardsHtml(result) {
+    const rateColumn = result.columns.find(col => col.key === "customerRate");
+    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+
+    return result.rows.map(row => `
+      <div class="compare-card">
+        <div class="compare-card-title">
+          ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
+        </div>
+
+        ${compareColumns.map(col => `
+          <div class="compare-card-row">
+            <div class="compare-card-label">${escapeHtml(col.label)}</div>
+            <div class="compare-card-value">${formatCell(row[col.key], col.type)}</div>
+          </div>
+        `).join("")}
+      </div>
+    `).join("");
+  }
+
+  function renderResultCards(result) {
+    const resultArea = document.getElementById("resultArea");
+    if (!resultArea) return;
+
+    resultArea.innerHTML = `
+      <div class="result-card-list">
+        ${result.rows.map(row => `
+          <div class="result-card">
+            ${result.columns.map(col => `
+              <div class="result-card-row">
+                <div class="result-card-label">${escapeHtml(col.label)}</div>
+                <div class="result-card-value">${formatCell(row[col.key], col.type)}</div>
               </div>
             `).join("")}
           </div>
@@ -245,37 +303,28 @@
       </div>
     `;
   }
-  function renderSingleResultCard(result) {
-     const row = result.rows[0];
-
-    document.getElementById("resultArea").innerHTML = `
-      <div class="result-card-list">
-        <div class="result-card">
-          ${result.columns.map(col => `
-            <div class="result-card-row">
-              <div class="result-card-label">${escapeHtml(col.label)}</div>
-              <div class="result-card-value">${formatCell(row[col.key], col.type)}</div>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-    `;
-  }
 
   function renderEmpty(message) {
-    document.getElementById("resultArea").innerHTML = `
+    const resultArea = document.getElementById("resultArea");
+    if (!resultArea) return;
+
+    resultArea.innerHTML = `
       <div class="empty">${escapeHtml(message)}</div>
     `;
   }
 
   function showNotice(message) {
     const notice = document.getElementById("notice");
+    if (!notice) return;
+
     notice.textContent = message;
     notice.style.display = "block";
   }
 
   function clearNotice() {
     const notice = document.getElementById("notice");
+    if (!notice) return;
+
     notice.textContent = "";
     notice.style.display = "none";
   }
