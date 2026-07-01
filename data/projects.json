@@ -166,7 +166,7 @@
       "modelSelectorLabel": "車型",
       "termInputLabel": "客戶期數",
       "loanInputLabel": "客戶貸款金額",
-      "maxTerm": 70,
+      "maxTerm": 84,
       "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
       "models": [
         { "id": "corolla_sport", "name": "COROLLA SPORT", "subsidyAmount": 300000, "subsidyTerm": 30 },
