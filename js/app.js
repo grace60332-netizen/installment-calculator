@@ -97,14 +97,8 @@
       }
 
       if (!isModelBasedProject(project)) {
-        const min = project.minLoanWan || state.data.defaultLoanWanMin || 10;
         const max = project.maxLoanWan || state.data.defaultLoanWanMax || 500;
 
-        if (loanWan < min) {
-          UI.showNotice(`貸款金額最低為 ${min} 萬。`);
-          UI.renderEmpty(`貸款金額最低為 ${min} 萬。`);
-          return;
-        }
 
         if (loanWan > max) {
           UI.showNotice(`${project.name} 的貸款金額上限為 ${max} 萬。`);
