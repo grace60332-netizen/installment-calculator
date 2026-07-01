@@ -140,9 +140,9 @@
           return;
         }
 
-        const maxTerm = project.maxTerm || 60;
+        const maxTerm = Number(project.maxTerm);
 
-        if (term > maxTerm) {
+        if (Number.isFinite(maxTerm) && maxTerm > 0 && term > maxTerm) {
           UI.showNotice(`${project.name} 的客戶期數上限為 ${maxTerm} 期。`);
           UI.renderEmpty(`${project.name} 的客戶期數上限為 ${maxTerm} 期。`);
           return;
