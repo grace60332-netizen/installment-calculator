@@ -97,7 +97,7 @@
       }
 
       if (!isModelBasedProject(project)) {
-        const min = state.data.defaultLoanWanMin || 100;
+        const min = project.minLoanWan || state.data.defaultLoanWanMin || 10;
         const max = project.maxLoanWan || state.data.defaultLoanWanMax || 500;
 
         if (loanWan < min) {

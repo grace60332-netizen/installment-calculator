@@ -122,8 +122,8 @@
         <input
           id="loanWan"
           type="number"
-          min="${data.defaultLoanWanMin || 100}"
-          max="${data.defaultLoanWanMax || 500}"
+          min="${data.defaultLoanWanMin || 10}"
+          max="${project.maxLoanWan || data.defaultLoanWanMax || 500}"
           step="${data.defaultLoanWanStep || 5}"
           value="100"
         >

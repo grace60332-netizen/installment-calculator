@@ -152,7 +152,6 @@
       "modelSelectorLabel": "車款",
       "termInputLabel": "客戶期數",
       "loanInputLabel": "客戶貸款金額",
-      "maxTerm": 60,
       "summaryColumns": ["貸款金額", "月付款", "DLR負擔", "最大月付款", "客戶利率", "最小DLR補貼"],
       "models": [
         { "id": "rx", "name": "RX", "subsidyAmount": 2000000, "subsidyTerm": 40 },
