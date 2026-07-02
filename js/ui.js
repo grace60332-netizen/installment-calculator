@@ -2,9 +2,9 @@
  * js/ui.js
  * 專門負責畫面渲染
  * 重構版：
- * - 桌機：豪享／樂享／樂購顯示利率比較表
- * - 手機：豪享／樂享／樂購自動改成一個利率一張卡
- * - TOYOTA／LEXUS／1.88%：一律顯示欄位／值卡片
+ * - 多筆 rows：顯示利率橫向比較表
+ * - 單筆 rows：顯示欄位／值卡片
+ * - 支援 TOYOTA / LEXUS / TOYOTA 1.88% 這類車型式專案
  */
 
 (function (global) {
@@ -16,10 +16,6 @@
       "lexus_zero_interest",
       "toyota_low_interest_188"
     ].includes(project?.type);
-  }
-
-  function isCompareProject(projectId) {
-    return ["haoxiang", "lexiang", "legou"].includes(projectId);
   }
 
   function renderApp(root, data, projects) {
@@ -64,7 +60,7 @@
               <div id="summary" class="meta"></div>
             </div>
 
-            <div class="card">
+            <div class="card result-card-shell">
               <div id="resultArea" class="table-wrap">
                 <div class="empty">請先輸入資料。</div>
               </div>
@@ -114,7 +110,7 @@
 
   function renderModelBasedFields(box, hint, project) {
     const modelLabel = project.modelSelectorLabel || "車型";
-    const models = project.models || [];
+    const models = Array.isArray(project.models) ? project.models : [];
 
     hint.textContent = `請選擇${modelLabel}，系統會自動帶出目前設定的適用專案。`;
 
@@ -156,7 +152,7 @@
     const modelSelect = document.getElementById("modelSelect");
     const projectDisplay = document.getElementById("modelProjectDisplay");
 
-    if (!modelSelect || !projectDisplay) return;
+    if (!modelSelect || !projectDisplay || !project) return;
 
     const model = (project.models || []).find(item => item.id === modelSelect.value);
 
@@ -195,11 +191,12 @@
       html += `
         <div>${escapeHtml(modelLabel)}：<strong>${escapeHtml(model?.name || "")}</strong></div>
         <div>適用專案：<strong>${
-          Number.isFinite(subsidyAmount) && subsidyAmount > 0 && Number.isFinite(subsidyTerm) && subsidyTerm > 0
+          Number.isFinite(subsidyAmount) && subsidyAmount > 0 &&
+          Number.isFinite(subsidyTerm) && subsidyTerm > 0
             ? `${formatWanAmount(subsidyAmount)}萬 / ${subsidyTerm}期`
             : "無適用專案"
         }</strong></div>
-        <div>客戶期數：<strong>${term}</strong> 期</div>
+        <div>客戶期數：<strong>${Number.isFinite(Number(term)) ? term : "—"}</strong> 期</div>
       `;
     }
 
@@ -207,12 +204,17 @@
   }
 
   function renderResult(result) {
-    if (!result || !Array.isArray(result.columns) || !Array.isArray(result.rows) || result.rows.length === 0) {
+    if (
+      !result ||
+      !Array.isArray(result.columns) ||
+      !Array.isArray(result.rows) ||
+      result.rows.length === 0
+    ) {
       renderEmpty("沒有可顯示的結果。");
       return;
     }
 
-    if (isCompareProject(result.projectId) && result.rows.length > 1) {
+    if (result.rows.length > 1) {
       renderCompareResult(result);
       return;
     }
@@ -228,15 +230,16 @@
       <div class="compare-table-wrap">
         ${renderCompareTable(result)}
       </div>
-      `;
+    `;
   }
 
   function renderCompareTable(result) {
     const rateColumn = result.columns.find(col => col.key === "customerRate");
     const compareColumns = result.columns.filter(col => col.key !== "customerRate");
+    const projectClass = `compare-table-${safeClassName(result.projectId)}`;
 
     return `
-      <table class="compare-table compare-table-${escapeHtml(result.projectId)}">
+      <table class="compare-table ${projectClass}">
         <thead>
           <tr>
             <th>利率</th>
@@ -258,29 +261,6 @@
         </tbody>
       </table>
     `;
-  }
-
-  function renderCompareCardsHtml(result) {
-    const rateColumn = result.columns.find(col => col.key === "customerRate");
-    const compareColumns = result.columns.filter(col => col.key !== "customerRate");
-
-    return compareColumns.map(col => `
-      <div class="mobile-compare-block">
-        <div class="mobile-compare-title">${escapeHtml(col.label)}</div>
-
-        ${result.rows.map(row => `
-          <div class="mobile-compare-row">
-            <div class="mobile-compare-rate">
-              ${formatCell(row.customerRate, rateColumn?.type || "ratePercent")}
-            </div>
-            <div class="mobile-compare-value">
-              ${formatCell(row[col.key], col.type)}
-            </div>
-          </div>
-        </div>
-      `).join("")}
-    </div>
-  `).join("");
   }
 
   function renderResultCards(result) {
@@ -353,6 +333,12 @@
     const wan = Number(amount) / 10000;
     if (!Number.isFinite(wan)) return "0";
     return Number.isInteger(wan) ? String(wan) : String(wan).replace(/\.0+$/, "");
+  }
+
+  function safeClassName(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "-");
   }
 
   function escapeHtml(text) {
