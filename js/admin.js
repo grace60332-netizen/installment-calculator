@@ -175,8 +175,8 @@
               </div>
 
               <div class="admin-actions">
-                ${editingProject ? `<button id="logoutBtn" type="button" class="ghost">登出</button>` : ""}
-                <button id="backToListBtn" type="button" class="ghost">回專案列表</button>
+                <button id="logoutBtn" type="button" class="ghost">登出</button>
+                ${editingProject ? `<button id="backBtn" type="button" class="ghost">回專案列表</button>` : ""}
                 <button id="saveBtn" type="button">儲存設定</button>
               </div>
             </div>
